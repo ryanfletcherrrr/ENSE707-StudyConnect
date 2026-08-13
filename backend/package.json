@@ -1,0 +1,18 @@
+{
+  "name": "studyconnect-backend",
+  "version": "1.0.0",
+  "description": "StudyConnect backend API - authentication and profile management prototype. Zero external dependencies: built entirely on Node's built-in http, node:sqlite and crypto modules. See README.md for why, and for how to swap in Express/bcrypt/jsonwebtoken later if your course requires matching the documented tech stack exactly.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --no-warnings src/server.js",
+    "dev": "node --no-warnings --watch src/server.js",
+    "seed": "node --no-warnings src/db/seed.js",
+    "test": "node --no-warnings --test src/tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile · AUT StudyConnect</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar__brand"><a href="dashboard.html">AUT StudyConnect</a></div>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <button id="logout-btn" type="button">Log out</button>
+    </nav>
+  </div>
+
+  <main class="wide">
+    <div class="card">
+      <h1>My Profile</h1>
+      <p class="subtitle">View and update your StudyConnect profile.</p>
+
+      <div id="form-message" class="message" role="alert"></div>
+      <p id="loading-state" class="skeleton">Loading your profile…</p>
+
+      <form id="profile-form" novalidate style="display: none">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" disabled />
+        </div>
+
+        <div class="field">
+          <label for="first_name">First name</label>
+          <input type="text" id="first_name" name="first_name" />
+          <div class="field-error" data-error-for="first_name"></div>
+        </div>
+
+        <div class="field">
+          <label for="last_name">Last name</label>
+          <input type="text" id="last_name" name="last_name" />
+          <div class="field-error" data-error-for="last_name"></div>
+        </div>
+
+        <div class="field">
+          <label for="course">Course</label>
+          <input type="text" id="course" name="course" placeholder="e.g. ENSE707" />
+          <div class="field-error" data-error-for="course"></div>
+        </div>
+
+        <div class="field">
+          <label for="bio">About me</label>
+          <textarea id="bio" name="bio" placeholder="Tell other students a bit about yourself"></textarea>
+          <div class="field-error" data-error-for="bio"></div>
+        </div>
+
+        <button type="submit" class="primary" id="submit-btn">Save changes</button>
+      </form>
+    </div>
+  </main>
+
+  <script type="module" src="js/profile.js"></script>
+</body>
+</html>

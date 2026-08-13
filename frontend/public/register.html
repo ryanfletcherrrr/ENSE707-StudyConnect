@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account · AUT StudyConnect</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1>Create your account</h1>
+      <p class="subtitle">Join AUT StudyConnect to find study groups.</p>
+
+      <div id="form-message" class="message" role="alert"></div>
+
+      <form id="register-form" novalidate>
+        <div class="field">
+          <label for="first_name">First name</label>
+          <input type="text" id="first_name" name="first_name" autocomplete="given-name" />
+          <div class="field-error" data-error-for="first_name"></div>
+        </div>
+
+        <div class="field">
+          <label for="last_name">Last name</label>
+          <input type="text" id="last_name" name="last_name" autocomplete="family-name" />
+          <div class="field-error" data-error-for="last_name"></div>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="username" placeholder="you@aut.ac.nz" />
+          <div class="field-error" data-error-for="email"></div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="new-password" placeholder="At least 8 characters" />
+          <div class="field-error" data-error-for="password"></div>
+        </div>
+
+        <div class="field">
+          <label for="course">Course (optional)</label>
+          <input type="text" id="course" name="course" placeholder="e.g. ENSE707" />
+        </div>
+
+        <button type="submit" class="primary" id="submit-btn">Create account</button>
+      </form>
+
+      <div class="link-row">
+        Already have an account? <a href="index.html">Sign in</a>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/register.js"></script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+{
+  "info": {
+    "name": "StudyConnect API - Login & Profile",
+    "description": "Covers FR-01 (login), FR-02 (profile management) and acceptance criteria AC-01 through AC-06 from the StudyConnect requirements doc. Import into Postman along with the 'StudyConnect Local' environment, start the backend (npm start in /backend), then run requests top to bottom - Login/Register automatically saves the session token for the Profile requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Reports ok status', () => pm.expect(pm.response.json().status).to.eql('ok'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register (Workflow 4)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"first_name\": \"Postman\",\n  \"last_name\": \"Tester\",\n  \"email\": \"postman.tester+{{$timestamp}}@aut.ac.nz\",\n  \"password\": \"Password123!\",\n  \"course\": \"ENSE707\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+              "const body = pm.response.json();",
+              "pm.test('Returns a session token', () => pm.expect(body.token).to.be.a('string'));",
+              "pm.test('Does not return the password hash', () => pm.expect(body.student.password_hash).to.be.undefined);",
+              "pm.collectionVariables.set('token', body.token);",
+              "pm.collectionVariables.set('registeredEmail', body.student.email);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - valid credentials (AC-01)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{registeredEmail}}\",\n  \"password\": \"Password123!\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AC-01: Status code is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('AC-01: Returns a session token and student profile', () => {",
+              "  pm.expect(body.token).to.be.a('string');",
+              "  pm.expect(body.student.email).to.eql(pm.collectionVariables.get('registeredEmail'));",
+              "});",
+              "pm.collectionVariables.set('token', body.token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - wrong password (AC-02)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{registeredEmail}}\",\n  \"password\": \"TotallyWrongPassword\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AC-02: Status code is 401', () => pm.response.to.have.status(401));",
+              "pm.test('AC-02: Returns a clear error message', () => pm.expect(pm.response.json().error).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Profile - no token (AC-03)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/profile/me", "host": ["{{baseUrl}}"], "path": ["profile", "me"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AC-03: Status code is 401 when unauthenticated', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Profile - authenticated (AC-04)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/profile/me", "host": ["{{baseUrl}}"], "path": ["profile", "me"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AC-04: Status code is 200', () => pm.response.to.have.status(200));",
+              "pm.test('AC-04: Returns the authenticated student profile', () => {",
+              "  pm.expect(pm.response.json().student.email).to.eql(pm.collectionVariables.get('registeredEmail'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Profile (AC-05 / AC-06)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bio\": \"Updated via Postman.\",\n  \"course\": \"ENSE701\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/profile/me", "host": ["{{baseUrl}}"], "path": ["profile", "me"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('AC-05: Status code is 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('AC-06: Change is saved and returned', () => {",
+              "  pm.expect(body.student.bio).to.eql('Updated via Postman.');",
+              "  pm.expect(body.student.course).to.eql('ENSE701');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Profile - invalid input (AC-05 validation)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"first_name\": \"   \"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/profile/me", "host": ["{{baseUrl}}"], "path": ["profile", "me"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Rejects blank first_name with 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

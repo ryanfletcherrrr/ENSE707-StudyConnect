@@ -1,0 +1,15 @@
+{
+  "name": "studyconnect-frontend",
+  "version": "1.0.0",
+  "description": "StudyConnect frontend prototype (login + profile). Zero external dependencies: plain HTML/CSS/JS served by a small built-in static server. See README.md for why, and for how to swap in React/Vite/Tailwind later if your course requires matching the documented tech stack exactly.",
+  "type": "module",
+  "scripts": {
+    "start": "node server/staticServer.js",
+    "test": "node --no-warnings --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

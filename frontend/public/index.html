@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In · AUT StudyConnect</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main>
+    <div class="card">
+      <h1>Welcome to AUT StudyConnect</h1>
+      <p class="subtitle">Sign in to find and join study groups.</p>
+
+      <div id="form-message" class="message" role="alert"></div>
+
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="username" placeholder="you@aut.ac.nz" />
+          <div class="field-error" data-error-for="email"></div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Password" />
+          <div class="field-error" data-error-for="password"></div>
+        </div>
+
+        <button type="submit" class="primary" id="submit-btn">Sign in</button>
+      </form>
+
+      <div class="link-row">
+        Don't have an account? <a href="register.html">Create one</a>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>

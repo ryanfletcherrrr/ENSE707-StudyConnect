@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · AUT StudyConnect</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="top-bar">
+    <div class="top-bar__brand"><a href="dashboard.html">AUT StudyConnect</a></div>
+    <nav>
+      <a href="profile.html">Profile</a>
+      <button id="logout-btn" type="button">Log out</button>
+    </nav>
+  </div>
+
+  <main class="wide">
+    <div class="card">
+      <h1 id="welcome-heading">Welcome</h1>
+      <p class="subtitle" id="welcome-subtitle">Loading your account…</p>
+
+      <div class="dashboard-grid">
+        <div>
+          <h2>Quick links</h2>
+          <div class="dashboard-links">
+            <a href="profile.html">Manage my profile</a>
+            <span class="skeleton">Find study groups, my groups, and my schedule are not part of this first build slice yet.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>
