@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join Study Group · AUT StudyConnect</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="top-bar">
+    <div class="top-bar__brand">
+      <a href="dashboard.html">AUT StudyConnect</a>
+    </div>
+
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">Profile</a>
+      <button id="logout-btn" type="button">Log out</button>
+    </nav>
+  </div>
+
+  <main class="wide">
+    <div class="card">
+      <h1 id="group-title">Join Study Group</h1>
+
+      <p id="group-description" class="subtitle"></p>
+
+      <p id="group-message" class="subtitle"></p>
+
+      <div id="group-slots"></div>
+
+      <p>
+        <a href="search-groups.html">← Back to Study Groups</a>
+      </p>
+    </div>
+  </main>
+
+  <script type="module" src="js/join-group.js"></script>
+</body>
+</html>

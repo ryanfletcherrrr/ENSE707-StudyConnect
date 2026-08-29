@@ -42,6 +42,8 @@ export function createApp() {
       return;
     }
 
+    req.params = route.params || {};
+
     try {
       req.body = await readJsonBody(req);
       await runHandlerChain(route.handlers, req, res);
