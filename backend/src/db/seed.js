@@ -42,7 +42,43 @@ for (const student of sampleStudents) {
   });
 }
 
+const ava = db
+  .prepare('SELECT id FROM students WHERE email = ?')
+  .get('ava.ngata@aut.ac.nz');
+
+const sampleGroups = [
+  {
+    group_name: 'ENSE707 Study Group',
+    course: 'ENSE707',
+    description: 'Study group for ENSE707 assignments and exam preparation.',
+    created_by: ava.id,
+  },
+  {
+    group_name: 'Software Quality Study Session',
+    course: 'ENSE707',
+    description: 'Weekly study sessions focused on software quality assurance.',
+    created_by: ava.id,
+  },
+];
+
+const insertGroup = db.prepare(`
+  INSERT INTO study_groups (group_name, course, description, created_by)
+  SELECT @group_name, @course, @description, @created_by
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM study_groups
+    WHERE group_name = @group_name
+      AND course = @course
+      AND created_by = @created_by
+  )
+`);
+
+for (const group of sampleGroups) {
+  insertGroup.run(group);
+}
+
 console.log(`Seeded ${sampleStudents.length} sample student account(s).`);
 console.log('Sample login: ava.ngata@aut.ac.nz / Password123!');
+console.log(`Seeded ${sampleGroups.length} sample study group(s).`);
 
 db.close();

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Study Groups · AUT StudyConnect</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="top-bar">
+    <div class="top-bar__brand">
+      <a href="dashboard.html">AUT StudyConnect</a>
+    </div>
+
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">Profile</a>
+      <button id="logout-btn" type="button">Log out</button>
+    </nav>
+  </div>
+
+  <main class="wide">
+    <div class="card">
+      <h1>Find Study Groups</h1>
+      <p class="subtitle">
+        Search for available study groups by course.
+      </p>
+
+      <form id="course-search-form">
+        <label for="course">Course</label>
+        <input
+          id="course"
+          name="course"
+          type="text"
+          placeholder="e.g. ENSE707"
+          required
+        />
+
+        <button type="submit">Search</button>
+      </form>
+
+      <p id="search-message" class="subtitle"></p>
+
+      <div id="group-results"></div>
+    </div>
+  </main>
+
+  <script type="module" src="js/search-groups.js"></script>
+</body>
+</html>
