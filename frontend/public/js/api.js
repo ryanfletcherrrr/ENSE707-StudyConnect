@@ -70,4 +70,14 @@ export const api = {
     request(`/study-groups?course=${encodeURIComponent(course)}`, {
       auth: true,
     }),
+  getStudyGroupSlots: (studyGroupId) =>
+    request(`/study-groups/${studyGroupId}/slots`, {
+      auth: true,
+    }),
+  joinStudyGroup: (slotId) =>
+    request('/study-groups/join', {
+      method: 'POST',
+      body: { slotId },
+      auth: true,
+    }),
 };

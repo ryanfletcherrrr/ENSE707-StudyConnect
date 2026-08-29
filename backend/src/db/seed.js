@@ -77,6 +77,33 @@ for (const group of sampleGroups) {
   insertGroup.run(group);
 }
 
+// Create six selectable groups for each study session
+const studyGroups = db
+  .prepare('SELECT id FROM study_groups')
+  .all();
+
+const insertSlot = db.prepare(`
+  INSERT INTO study_group_slots (study_group_id, group_number, capacity)
+  SELECT ?, ?, 6
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM study_group_slots
+    WHERE study_group_id = ?
+      AND group_number = ?
+  )
+`);
+
+for (const studyGroup of studyGroups) {
+  for (let groupNumber = 1; groupNumber <= 6; groupNumber++) {
+    insertSlot.run(
+      studyGroup.id,
+      groupNumber,
+      studyGroup.id,
+      groupNumber
+    );
+  }
+}
+
 console.log(`Seeded ${sampleStudents.length} sample student account(s).`);
 console.log('Sample login: ava.ngata@aut.ac.nz / Password123!');
 console.log(`Seeded ${sampleGroups.length} sample study group(s).`);
