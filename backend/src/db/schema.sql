@@ -16,3 +16,15 @@ CREATE TABLE IF NOT EXISTS students (
 );
 
 CREATE INDEX IF NOT EXISTS idx_students_email ON students(email);
+
+CREATE TABLE IF NOT EXISTS study_groups (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_name  TEXT NOT NULL,
+    course      TEXT NOT NULL,
+    description TEXT NOT NULL,
+    created_by  INTEGER NOT NULL,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (created_by) REFERENCES students(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_study_groups_course ON study_groups(course);

@@ -3,6 +3,7 @@ import { URL } from 'node:url';
 import authRoutes from './routes/authRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import { readJsonBody, enhanceResponse, applyCors, findRoute, runHandlerChain } from './http/httpUtils.js';
+import studyGroupRoutes from './routes/studyGroupRoutes.js';
 
 const healthRoute = {
   method: 'GET',
@@ -10,7 +11,12 @@ const healthRoute = {
   handlers: [(req, res) => res.status(200).json({ status: 'ok' })],
 };
 
-const routes = [healthRoute, ...authRoutes, ...profileRoutes];
+const routes = [
+  healthRoute,
+  ...authRoutes,
+  ...profileRoutes,
+  ...studyGroupRoutes,
+];
 
 // Builds a plain Node http.Server (no Express - see README.md for why).
 // The req/res objects passed to controllers still look and behave like
