@@ -44,9 +44,19 @@ form.addEventListener('submit', async (event) => {
       const description = document.createElement('p');
       description.textContent = group.description;
 
+      // Button to view the available groups
+      const viewGroupsBtn = document.createElement('button');
+      viewGroupsBtn.type = 'button';
+      viewGroupsBtn.textContent = 'View Groups';
+
+      viewGroupsBtn.addEventListener('click', () => {
+        window.location.href = `join-group.html?id=${group.id}`;
+      });
+
       groupCard.appendChild(heading);
       groupCard.appendChild(courseText);
       groupCard.appendChild(description);
+      groupCard.appendChild(viewGroupsBtn);
 
       resultsEl.appendChild(groupCard);
     }

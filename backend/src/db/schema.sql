@@ -28,3 +28,31 @@ CREATE TABLE IF NOT EXISTS study_groups (
 );
 
 CREATE INDEX IF NOT EXISTS idx_study_groups_course ON study_groups(course);
+
+CREATE TABLE IF NOT EXISTS study_group_slots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    study_group_id INTEGER NOT NULL,
+    group_number INTEGER NOT NULL,
+    capacity INTEGER NOT NULL DEFAULT 6,
+    FOREIGN KEY (study_group_id) REFERENCES study_groups(id),
+    UNIQUE (study_group_id, group_number)
+);
+
+CREATE TABLE IF NOT EXISTS study_group_members (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slot_id INTEGER NOT NULL,
+    student_id INTEGER NOT NULL,
+    joined_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (slot_id) REFERENCES study_group_slots(id),
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    UNIQUE (slot_id, student_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_study_group_slots_group
+    ON study_group_slots(study_group_id);
+
+CREATE INDEX IF NOT EXISTS idx_study_group_members_slot
+    ON study_group_members(slot_id);
+
+CREATE INDEX IF NOT EXISTS idx_study_group_members_student
+    ON study_group_members(student_id);

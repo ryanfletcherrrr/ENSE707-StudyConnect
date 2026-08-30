@@ -8,7 +8,7 @@ const MAX_BODY_BYTES = 1_000_000; // 1MB is generous for this prototype's JSON p
 export function readJsonBody(req) {
   return new Promise((resolve, reject) => {
     const method = req.method;
-    if (method === 'GET' || method === 'DELETE') {
+    if (method === 'GET') {
       resolve({});
       return;
     }
@@ -70,7 +70,43 @@ export function applyCors(req, res) {
 }
 
 export function findRoute(routes, method, pathname) {
-  return routes.find((route) => route.method === method && route.path === pathname) || null;
+  for (const route of routes) {
+    if (route.method !== method) {
+      continue;
+    }
+
+    const routeParts = route.path.split('/');
+    const pathParts = pathname.split('/');
+
+    if (routeParts.length !== pathParts.length) {
+      continue;
+    }
+
+    const params = {};
+    let matches = true;
+
+    for (let i = 0; i < routeParts.length; i++) {
+      const routePart = routeParts[i];
+      const pathPart = pathParts[i];
+
+      if (routePart.startsWith('{') && routePart.endsWith('}')) {
+        const paramName = routePart.slice(1, -1);
+        params[paramName] = pathPart;
+      } else if (routePart !== pathPart) {
+        matches = false;
+        break;
+      }
+    }
+
+    if (matches) {
+      return {
+        ...route,
+        params,
+      };
+    }
+  }
+
+  return null;
 }
 
 // Runs an array of (req, res, next) handlers in sequence, matching Express's
