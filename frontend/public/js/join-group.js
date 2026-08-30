@@ -88,7 +88,8 @@ async function joinGroup(slotId, button) {
 
     messageEl.textContent = result.message;
 
-    await loadStudyGroup();
+    window.location.href =
+      `study-group.html?id=${studyGroupId}&slotId=${slotId}`;
   } catch (err) {
     if (err.status === 401) {
       clearToken();

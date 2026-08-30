@@ -4,6 +4,7 @@ import {
   searchStudyGroups,
   joinGroup,
   getStudyGroupSlots,
+  leaveGroup,
 } from '../controllers/studyGroupController.js';
 
 
@@ -26,5 +27,11 @@ export default [
     method: 'POST',
     path: '/api/study-groups/join',
     handlers: [requireAuth, joinGroup],
+  },
+
+  {
+    method: 'DELETE',
+    path: '/api/study-groups/leave',
+    handlers: [requireAuth, leaveGroup],
   },
 ];

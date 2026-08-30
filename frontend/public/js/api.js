@@ -68,5 +68,6 @@ export const api = {
   updateProfile: (fields) => request('/profile/me', { method: 'PUT', body: fields, auth: true }),
   searchStudyGroups: (course) => request(`/study-groups?course=${encodeURIComponent(course)}`, {auth: true}),
   getStudyGroupSlots: (studyGroupId) => request(`/study-groups/${studyGroupId}/slots`, {auth: true}),
-  joinStudyGroup: (slotId) =>request('/study-groups/join', {method: 'POST', body: { slotId },auth: true,}),
+  joinStudyGroup: (slotId) => request('/study-groups/join', {method: 'POST', body: { slotId }, auth: true}),
+  leaveStudyGroup: (slotId) => request('/study-groups/leave', {method: 'DELETE', body: { slotId }, auth: true}),
 };

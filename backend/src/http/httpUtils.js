@@ -8,7 +8,7 @@ const MAX_BODY_BYTES = 1_000_000; // 1MB is generous for this prototype's JSON p
 export function readJsonBody(req) {
   return new Promise((resolve, reject) => {
     const method = req.method;
-    if (method === 'GET' || method === 'DELETE') {
+    if (method === 'GET') {
       resolve({});
       return;
     }
