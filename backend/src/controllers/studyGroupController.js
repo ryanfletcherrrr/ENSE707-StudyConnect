@@ -6,13 +6,21 @@ export function searchStudyGroups(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const course = url.searchParams.get('course');
 
-  if (!course || typeof course !== 'string' || !course.trim()) {
-    return res.status(400).json({
-      error: 'Course is required.'
-    });
-  }
+if (!course || typeof course !== 'string' || !course.trim()) {
+  return res.status(400).json({
+    error: 'Course is required.'
+  });
+}
 
-  const groups = findGroupsByCourse(db, course);
+const normalizedCourse = course.trim().toUpperCase();
+
+if (normalizedCourse.length > 20) {
+  return res.status(400).json({
+    error: 'Course must be 20 characters or fewer.'
+  });
+}
+
+const groups = findGroupsByCourse(db, normalizedCourse);
 
   return res.status(200).json({
     groups
