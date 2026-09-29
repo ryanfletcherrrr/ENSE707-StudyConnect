@@ -5,6 +5,12 @@
 
 const MAX_BODY_BYTES = 1_000_000; // 1MB is generous for this prototype's JSON payloads
 
+// DEF-01 fix: an oversized body used to call req.destroy() as soon as the
+// limit was crossed, which resets the underlying TCP connection - the
+// client sees a bare connection reset instead of the 413 response below.
+// Instead, once the limit is crossed we stop buffering (so memory is still
+// bounded) but let the stream drain normally to its 'end' event, so the
+// connection stays alive long enough for app.js to send a clean 413.
 export function readJsonBody(req) {
   return new Promise((resolve, reject) => {
     const method = req.method;
@@ -15,18 +21,30 @@ export function readJsonBody(req) {
 
     const chunks = [];
     let totalBytes = 0;
+    let tooLarge = false;
 
     req.on('data', (chunk) => {
+      if (tooLarge) {
+        // Already over the limit - discard further chunks instead of
+        // buffering them, but keep the stream flowing so it reaches 'end'.
+        return;
+      }
+
       totalBytes += chunk.length;
       if (totalBytes > MAX_BODY_BYTES) {
-        reject(Object.assign(new Error('Request body too large.'), { statusCode: 413 }));
-        req.destroy();
+        tooLarge = true;
+        chunks.length = 0; // release what we'd buffered so far
         return;
       }
       chunks.push(chunk);
     });
 
     req.on('end', () => {
+      if (tooLarge) {
+        reject(Object.assign(new Error('Request body too large.'), { statusCode: 413 }));
+        return;
+      }
+
       if (chunks.length === 0) {
         resolve({});
         return;
