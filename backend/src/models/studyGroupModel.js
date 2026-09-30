@@ -1,6 +1,47 @@
 // Data-access layer for study groups.
 // Raw SQL stays here so controllers remain focused on request handling.
 
+// FR-NEW (create group): a student creates a study group. The group starts
+// with exactly one slot (group_number 1, the creator-chosen capacity), and
+// the creator is automatically added to it as its first member - they
+// created the group in order to be in it, so this avoids a redundant
+// separate "now join the group you just made" step.
+export function createStudyGroup(db, { groupName, course, description, capacity, createdBy }) {
+  const groupResult = db
+    .prepare(`
+        INSERT INTO study_groups (group_name, course, description, created_by)
+        VALUES (?, ?, ?, ?)
+      `)
+    .run(groupName, course, description, createdBy);
+
+  const studyGroupId = groupResult.lastInsertRowid;
+
+  const slotResult = db
+    .prepare(`
+        INSERT INTO study_group_slots (study_group_id, group_number, capacity)
+        VALUES (?, 1, ?)
+      `)
+    .run(studyGroupId, capacity);
+
+  const slotId = slotResult.lastInsertRowid;
+
+  db.prepare(`
+      INSERT INTO study_group_members (slot_id, student_id)
+      VALUES (?, ?)
+    `).run(slotId, createdBy);
+
+  return {
+    id: studyGroupId,
+    groupName,
+    course,
+    description,
+    slotId,
+    groupNumber: 1,
+    capacity,
+    memberCount: 1,
+  };
+}
+
 export function findGroupsByCourse(db, course) {
   return db
     .prepare(`

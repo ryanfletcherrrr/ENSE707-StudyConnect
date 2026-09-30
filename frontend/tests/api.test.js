@@ -128,6 +128,30 @@ test('api.updateProfile: sends a PUT with the updated fields', async () => {
   clearToken();
 });
 
+test('api.createStudyGroup: sends a POST with the group fields and an auth header', async () => {
+  setToken('my-test-token');
+  const stub = stubFetch((url, options) => {
+    assert.ok(url.endsWith('/study-groups'));
+    assert.equal(options.method, 'POST');
+    assert.equal(options.headers.Authorization, 'Bearer my-test-token');
+    return jsonResponse(201, { group: { id: 1, groupName: 'Test Group', slotId: 1 } });
+  });
+
+  const data = await api.createStudyGroup({
+    group_name: 'Test Group',
+    course: 'ENSE707',
+    description: 'A test group.',
+  });
+
+  assert.equal(data.group.groupName, 'Test Group');
+
+  const sentBody = JSON.parse(stub.calls[0].options.body);
+  assert.equal(sentBody.group_name, 'Test Group');
+
+  stub.restore();
+  clearToken();
+});
+
 test('api client: surfaces a friendly error when the network request itself fails', async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => {
