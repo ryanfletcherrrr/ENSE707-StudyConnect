@@ -141,6 +141,16 @@ textarea:focus {
   outline-offset: 1px;
 }
 
+/* DEF-06: placeholder colour was left to each browser's own unmeasured
+   default. Setting it explicitly makes the documented WCAG contrast ratio
+   (5.61:1, placeholder text on input background) actually true, and
+   consistent across browsers instead of browser-dependent. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
 textarea {
   resize: vertical;
   min-height: 80px;

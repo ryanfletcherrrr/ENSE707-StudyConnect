@@ -56,6 +56,23 @@ test('register: rejects an invalid registration (short password)', async () => {
   assert.equal(res.status, 400);
 });
 
+// DEF-05 regression: a non-string password used to produce the exact same
+// message as a too-short one, which is misleading for a type-confusion
+// input. The two cases must now produce distinguishable messages.
+test('DEF-05: a missing/non-string password gets a different message than a too-short one', async () => {
+  const missing = await registerStudent({ password: undefined });
+  const numeric = await registerStudent({ password: 12345678 });
+  const tooShort = await registerStudent({ password: 'short' });
+
+  assert.equal(missing.res.status, 400);
+  assert.equal(numeric.res.status, 400);
+  assert.equal(tooShort.res.status, 400);
+
+  assert.ok(missing.data.details.includes('Password is required.'));
+  assert.ok(numeric.data.details.includes('Password is required.'));
+  assert.ok(tooShort.data.details.includes('Password must be between 8 and 128 characters.'));
+});
+
 // AC-01: valid credentials authenticate the user and grant access.
 test('login (AC-01): valid credentials return a token and the student profile', async () => {
   const { credentials } = await registerStudent();
