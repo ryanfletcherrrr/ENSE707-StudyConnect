@@ -1,0 +1,71 @@
+name: CI
+
+# Task 5 quality gates: every push/PR to main must build cleanly, pass the
+# full backend + frontend test suite, and pass a smoke test that the API
+# actually comes up and responds - before it's mergeable.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build, test, and smoke-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Run backend test suite
+        working-directory: backend
+        run: npm test
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run frontend test suite
+        working-directory: frontend
+        run: npm test
+
+      - name: Smoke test - backend actually starts and answers /api/health
+        working-directory: backend
+        env:
+          PORT: 4000
+          DB_FILE: ':memory:'
+          JWT_SECRET: ci-smoke-test-secret
+        run: |
+          npm start &
+          SERVER_PID=$!
+
+          READY=""
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:4000/api/health > /dev/null 2>&1; then
+              READY="yes"
+              break
+            fi
+            sleep 1
+          done
+
+          if [ -z "$READY" ]; then
+            echo "Backend never became healthy within 15s"
+            kill "$SERVER_PID" 2>/dev/null || true
+            exit 1
+          fi
+
+          echo "Health check response:"
+          curl -sf http://localhost:4000/api/health
+
+          kill "$SERVER_PID"
