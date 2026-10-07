@@ -162,3 +162,18 @@ test('api client: surfaces a friendly error when the network request itself fail
 
   globalThis.fetch = originalFetch;
 });
+
+test('api.getMyStudyGroups sends an authenticated GET to /study-groups/mine', async () => {
+  setToken('tok-mine');
+  const stub = stubFetch(async () => jsonResponse(200, { groups: [] }));
+  try {
+    const result = await api.getMyStudyGroups();
+    assert.deepEqual(result, { groups: [] });
+    assert.match(stub.calls[0].url, /\/study-groups\/mine$/);
+    assert.equal(stub.calls[0].options.method, 'GET');
+    assert.equal(stub.calls[0].options.headers.Authorization, 'Bearer tok-mine');
+  } finally {
+    stub.restore();
+    clearToken();
+  }
+});
