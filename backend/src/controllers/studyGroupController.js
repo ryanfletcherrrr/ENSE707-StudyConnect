@@ -3,6 +3,7 @@ import db from '../db/index.js';
 import {
   createStudyGroup,
   findGroupsByCourse,
+  findGroupsForStudent,
   joinStudyGroup,
   findStudyGroupSlots,
   leaveStudyGroup,
@@ -60,6 +61,13 @@ export function createGroup(req, res) {
     message: `"${group.groupName}" was created - you've been added as its first member.`,
     group,
   });
+}
+
+// FR-NEW (my groups): an authenticated student can list the study groups
+// they have joined (or created), most recently joined first.
+export function getMyGroups(req, res) {
+  const groups = findGroupsForStudent(db, req.studentId);
+  return res.status(200).json({ groups });
 }
 
 // FR-03: an authenticated student can search for study groups by course.

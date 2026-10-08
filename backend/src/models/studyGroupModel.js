@@ -42,6 +42,37 @@ export function createStudyGroup(db, { groupName, course, description, capacity,
   };
 }
 
+// "My groups": every study group slot the student currently belongs to, with
+// the group's details and how full the slot is. A student can be in at most
+// one slot per group (joinStudyGroup moves them), so this is one row per group.
+export function findGroupsForStudent(db, studentId) {
+  return db
+    .prepare(`
+        SELECT
+          study_groups.id AS id,
+          study_groups.group_name,
+          study_groups.course,
+          study_groups.description,
+          study_group_slots.id AS slot_id,
+          study_group_slots.group_number,
+          study_group_slots.capacity,
+          (
+            SELECT COUNT(*)
+            FROM study_group_members AS all_members
+            WHERE all_members.slot_id = study_group_slots.id
+          ) AS member_count,
+          study_group_members.joined_at
+        FROM study_group_members
+        JOIN study_group_slots
+          ON study_group_slots.id = study_group_members.slot_id
+        JOIN study_groups
+          ON study_groups.id = study_group_slots.study_group_id
+        WHERE study_group_members.student_id = ?
+        ORDER BY study_group_members.joined_at DESC, study_group_members.id DESC
+      `)
+    .all(studentId);
+}
+
 export function findGroupsByCourse(db, course) {
   return db
     .prepare(`
