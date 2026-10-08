@@ -1,8 +1,16 @@
 name: CI
 
-# Task 5 quality gates: every push/PR to main must build cleanly, pass the
-# full backend + frontend test suite, and pass a smoke test that the API
-# actually comes up and responds - before it's mergeable.
+# Task 5 quality gates. Every push/PR to main must pass, in order:
+#   1. Quality check - every JS file parses, no merge-conflict markers, no
+#      focused (.only) tests, no leftover debugger statements.
+#   2. Backend and frontend test suites, run with a coverage threshold
+#      (lines/branches/functions) so untested code cannot quietly grow.
+#   3. Smoke test - the API actually starts and answers /api/health.
+# Branch protection on main additionally requires this job to pass and a
+# reviewed pull request before merging.
+#
+# NOTE: the job name below is the required status check in branch protection.
+# Renaming it detaches the gate, so change both together.
 
 on:
   push:
@@ -10,10 +18,14 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: Build, test, and smoke-check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -24,21 +36,40 @@ jobs:
         with:
           node-version: '22.x'
 
+      - name: Quality check (syntax and test hygiene)
+        run: node scripts/quality-check.mjs
+
       - name: Install backend dependencies
         working-directory: backend
         run: npm install
 
-      - name: Run backend test suite
+      - name: Run backend tests with coverage gate
         working-directory: backend
-        run: npm test
+        shell: bash
+        run: |
+          npm run test:coverage | tee "$RUNNER_TEMP/backend-coverage.txt"
+          {
+            echo '### Backend coverage'
+            echo '```'
+            sed -n '/start of coverage report/,/end of coverage report/p' "$RUNNER_TEMP/backend-coverage.txt" | sed 's/^# //'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm install
 
-      - name: Run frontend test suite
+      - name: Run frontend tests with coverage gate
         working-directory: frontend
-        run: npm test
+        shell: bash
+        run: |
+          npm run test:coverage | tee "$RUNNER_TEMP/frontend-coverage.txt"
+          {
+            echo '### Frontend coverage'
+            echo '```'
+            sed -n '/start of coverage report/,/end of coverage report/p' "$RUNNER_TEMP/frontend-coverage.txt" | sed 's/^# //'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Smoke test - backend actually starts and answers /api/health
         working-directory: backend
