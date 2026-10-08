@@ -240,6 +240,27 @@ button.primary:disabled {
   text-decoration: underline;
 }
 
+.my-group {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border, rgba(128, 128, 128, 0.25));
+}
+
+.my-group a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.my-group a:hover {
+  text-decoration: underline;
+}
+
+.my-group__meta {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 .skeleton {
   color: var(--text-muted);
   font-size: 0.9rem;
