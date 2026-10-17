@@ -51,12 +51,6 @@ async function loadStudyGroup() {
 
         groupDetailsEl.innerHTML = '';
 
-        const members = document.createElement('p');
-        members.textContent =
-            `Members: ${selectedSlot.member_count} / ${selectedSlot.capacity}`;
-
-        groupDetailsEl.appendChild(members);
-
         await loadLearningResources();
     } catch (err) {
         if (err.status === 401) {
@@ -112,81 +106,87 @@ logoutBtn.addEventListener('click', () => {
 
 async function loadLearningResources() {
     try {
-      const { resources } = await api.getLearningResources(studyGroupId);
-  
-      resourceList.innerHTML = '';
-  
-      if (!resources || resources.length === 0) {
-        resourceList.innerHTML = '<p>No resources shared yet.</p>';
-        return;
-      }
-  
-      for (const resource of resources) {
-        const item = document.createElement('div');
-  
-        const title = document.createElement('strong');
-        title.textContent = resource.title;
-  
-        const link = document.createElement('a');
-        link.href = resource.url;
-        link.textContent = resource.url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-  
-        const sharedBy = document.createElement('p');
-        sharedBy.textContent =
-          `Shared by ${resource.first_name} ${resource.last_name}`;
-  
-        item.appendChild(title);
-        item.appendChild(document.createElement('br'));
-        item.appendChild(link);
-  
-        if (resource.description) {
-          const description = document.createElement('p');
-          description.textContent = resource.description;
-          item.appendChild(description);
-        }
-  
-        item.appendChild(sharedBy);
-        resourceList.appendChild(item);
-      }
-    } catch (err) {
-      if (err.status === 401) {
-        clearToken();
-        window.location.href = 'index.html';
-        return;
-      }
-  
-      resourceList.innerHTML = '<p>Could not load learning resources.</p>';
-    }
-  }
+        const { resources } = await api.getLearningResources(studyGroupId);
 
-  resourceForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-  
-    resourceMessage.textContent = '';
-  
-    const resource = {
-      title: resourceTitle.value.trim(),
-      url: resourceUrl.value.trim(),
-      description: resourceDescription.value.trim(),
-    };
-  
-    try {
-      await api.shareLearningResource(studyGroupId, resource);
-  
-      resourceMessage.textContent = 'Learning resource shared successfully.';
-      resourceForm.reset();
-  
-      await loadLearningResources();
+        resourceList.innerHTML = '';
+
+        if (!resources || resources.length === 0) {
+            const emptyMessage = document.createElement('p');
+            emptyMessage.textContent = 'No resources shared yet.';
+            resourceList.appendChild(emptyMessage);
+            return;
+        }
+
+        for (const resource of resources) {
+            const item = document.createElement('div');
+
+            const title = document.createElement('strong');
+            title.textContent = resource.title;
+
+            const link = document.createElement('a');
+            link.href = resource.url;
+            link.textContent = resource.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+
+            const sharedBy = document.createElement('p');
+            sharedBy.textContent =
+                `Shared by ${resource.first_name} ${resource.last_name}`;
+
+            item.appendChild(title);
+            item.appendChild(document.createElement('br'));
+            item.appendChild(link);
+
+            if (resource.description) {
+                const description = document.createElement('p');
+                description.textContent = resource.description;
+                item.appendChild(description);
+            }
+
+            item.appendChild(sharedBy);
+            resourceList.appendChild(item);
+        }
     } catch (err) {
-      if (err.status === 401) {
-        clearToken();
-        window.location.href = 'index.html';
-        return;
-      }
-  
-      resourceMessage.textContent =
-        err.message || 'Could not share learning resource.';
+        if (err.status === 401) {
+            clearToken();
+            window.location.href = 'index.html';
+            return;
+        }
+
+        resourceList.innerHTML = '';
+
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = 'Could not load learning resources.';
+        resourceList.appendChild(errorMessage);
     }
-  });
+}
+
+resourceForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    resourceMessage.textContent = '';
+
+    const resource = {
+        title: resourceTitle.value.trim(),
+        url: resourceUrl.value.trim(),
+        description: resourceDescription.value.trim(),
+    };
+
+    try {
+        await api.shareLearningResource(studyGroupId, resource);
+
+        resourceMessage.textContent = 'Learning resource shared successfully.';
+        resourceForm.reset();
+
+        await loadLearningResources();
+    } catch (err) {
+        if (err.status === 401) {
+            clearToken();
+            window.location.href = 'index.html';
+            return;
+        }
+
+        resourceMessage.textContent =
+            err.message || 'Could not share learning resource.';
+    }
+});

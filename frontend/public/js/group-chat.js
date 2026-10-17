@@ -5,22 +5,6 @@ const chatInput = document.getElementById('chat-input');
 const chatStatus = document.getElementById('chat-status');
 const chatSendBtn = document.getElementById('chat-send-btn');
 
-// Temporary sample data for frontend testing
-const sampleMessages = [
-  {
-    id: 1,
-    sender: 'Alex',
-    text: 'Hey everyone! When should we meet to study?',
-    time: '10:00 AM',
-  },
-  {
-    id: 2,
-    sender: 'Jamie',
-    text: 'How about Thursday afternoon?',
-    time: '10:05 AM',
-  },
-];
-
 function displayMessage(message) {
   const messageElement = document.createElement('div');
   messageElement.className = 'chat-message';
@@ -46,10 +30,10 @@ function displayMessage(message) {
   chatMessages.appendChild(messageElement);
 }
 
-function renderMessages() {
+function renderMessages(messages) {
   chatMessages.replaceChildren();
 
-  if (sampleMessages.length === 0) {
+  if (!messages || messages.length === 0) {
     const emptyMessage = document.createElement('p');
     emptyMessage.className = 'chat-empty';
     emptyMessage.textContent =
@@ -59,8 +43,7 @@ function renderMessages() {
     return;
   }
 
-  sampleMessages.forEach(displayMessage);
-
+  messages.forEach(displayMessage);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
@@ -81,28 +64,9 @@ chatForm.addEventListener('submit', (event) => {
   }
 
   chatSendBtn.disabled = true;
-  chatStatus.textContent = '';
-
-  try {
-    sampleMessages.push({
-      id: Date.now(),
-      sender: 'You',
-      text,
-      time: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-    });
-
-    renderMessages();
-
-    chatInput.value = '';
-    chatInput.focus();
-  } catch (error) {
-    chatStatus.textContent = 'Could not send the message.';
-  } finally {
-    chatSendBtn.disabled = false;
-  }
+  chatStatus.textContent =
+    'Chat backend is not connected yet. Your message has not been sent.';
+  chatSendBtn.disabled = false;
 });
 
-renderMessages();
+renderMessages([]);
