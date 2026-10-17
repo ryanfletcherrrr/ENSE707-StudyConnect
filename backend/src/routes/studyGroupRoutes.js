@@ -11,6 +11,11 @@ import {
   getLearningResources,
 } from '../controllers/studyGroupController.js';
 
+import {
+  getChatMessages,
+  sendChatMessage,
+  getChatMembers,
+} from '../controllers/groupChatController.js';
 
 // FR-NEW: authenticated students can create a study group.
 // FR-NEW: authenticated students can list the study groups they belong to.
@@ -65,5 +70,22 @@ export default [
     handlers: [requireAuth, getLearningResources],
   },
 
+  {
+    method: 'GET',
+    path: '/api/chat/slots/{id}/messages',
+    handlers: [requireAuth, getChatMessages],
+  },
+
+  {
+    method: 'POST',
+    path: '/api/chat/slots/{id}/messages',
+    handlers: [requireAuth, sendChatMessage],
+  },
+
+  {
+    method: 'GET',
+    path: '/api/chat/slots/{id}/members',
+    handlers: [requireAuth, getChatMembers],
+  },
 
 ];
