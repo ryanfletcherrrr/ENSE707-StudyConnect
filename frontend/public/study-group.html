@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -30,13 +31,60 @@
 
       <div id="group-details"></div>
 
+      <!-- Group Chat -->
+      <section class="chat-section" aria-label="Study group chat">
+        <h2>Group Chat</h2>
+
+        <p class="subtitle">
+          Communicate with members of your study group.
+        </p>
+
+        <div
+          id="chat-messages"
+          class="chat-messages"
+          role="log"
+          aria-live="polite"
+          aria-label="Chat messages"
+        >
+          <p class="chat-empty">
+            Loading messages...
+          </p>
+        </div>
+
+        <form id="chat-form" class="chat-form">
+          <label for="chat-input">Message</label>
+
+          <div class="chat-input-row">
+            <input
+              id="chat-input"
+              name="message"
+              type="text"
+              placeholder="Type a message..."
+              maxlength="1000"
+              autocomplete="off"
+              required
+            />
+
+            <button id="chat-send-btn" type="submit">
+              Send
+            </button>
+          </div>
+
+          <p
+            id="chat-status"
+            class="subtitle"
+            aria-live="polite"
+          ></p>
+        </form>
+      </section>
+
       <button id="leave-group-btn" type="button">
         Leave Group
       </button>
-
     </div>
   </main>
 
   <script type="module" src="js/study-group.js"></script>
+  <script type="module" src="js/group-chat.js"></script>
 </body>
 </html>
