@@ -1,24 +1,98 @@
 import db from '../db/index.js';
 
 import {
+  createStudyGroup,
   findGroupsByCourse,
+  findGroupsForStudent,
   joinStudyGroup,
   findStudyGroupSlots,
   leaveStudyGroup,
+  isStudentInStudyGroup,
+  createLearningResource,
+  findLearningResourcesByGroup,
 } from '../models/studyGroupModel.js';
+import { isNonEmptyString } from '../utils/validate.js';
+
+const MIN_GROUP_CAPACITY = 2;
+const MAX_GROUP_CAPACITY = 20;
+const DEFAULT_GROUP_CAPACITY = 6; // matches the seeded groups' capacity
+
+// FR-NEW: an authenticated student can create a study group. They are
+// automatically enrolled as its first member (see createStudyGroup).
+export function createGroup(req, res) {
+  const { group_name, course, description, capacity } = req.body ?? {};
+
+  const errors = [];
+
+  if (!isNonEmptyString(group_name, { max: 150 })) {
+    errors.push('group_name is required and must be 150 characters or fewer.');
+  }
+
+  let normalizedCourse;
+  if (!isNonEmptyString(course, { max: 20 })) {
+    errors.push('course is required and must be 20 characters or fewer.');
+  } else {
+    normalizedCourse = course.trim().toUpperCase();
+  }
+
+  if (!isNonEmptyString(description, { max: 1000 })) {
+    errors.push('description is required and must be 1000 characters or fewer.');
+  }
+
+  const parsedCapacity = capacity === undefined ? DEFAULT_GROUP_CAPACITY : Number(capacity);
+  if (
+    !Number.isInteger(parsedCapacity) ||
+    parsedCapacity < MIN_GROUP_CAPACITY ||
+    parsedCapacity > MAX_GROUP_CAPACITY
+  ) {
+    errors.push(`capacity must be a whole number between ${MIN_GROUP_CAPACITY} and ${MAX_GROUP_CAPACITY}.`);
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ error: 'Invalid study group details.', details: errors });
+  }
+
+  const group = createStudyGroup(db, {
+    groupName: group_name.trim(),
+    course: normalizedCourse,
+    description: description.trim(),
+    capacity: parsedCapacity,
+    createdBy: req.studentId,
+  });
+
+  return res.status(201).json({
+    message: `"${group.groupName}" was created - you've been added as its first member.`,
+    group,
+  });
+}
+
+// FR-NEW (my groups): an authenticated student can list the study groups
+// they have joined (or created), most recently joined first.
+export function getMyGroups(req, res) {
+  const groups = findGroupsForStudent(db, req.studentId);
+  return res.status(200).json({ groups });
+}
 
 // FR-03: an authenticated student can search for study groups by course.
 export function searchStudyGroups(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const course = url.searchParams.get('course');
 
-  if (!course || typeof course !== 'string' || !course.trim()) {
-    return res.status(400).json({
-      error: 'Course is required.'
-    });
-  }
+if (!course || typeof course !== 'string' || !course.trim()) {
+  return res.status(400).json({
+    error: 'Course is required.'
+  });
+}
 
-  const groups = findGroupsByCourse(db, course);
+const normalizedCourse = course.trim().toUpperCase();
+
+if (normalizedCourse.length > 20) {
+  return res.status(400).json({
+    error: 'Course must be 20 characters or fewer.'
+  });
+}
+
+const groups = findGroupsByCourse(db, normalizedCourse);
 
   return res.status(200).json({
     groups
@@ -103,4 +177,108 @@ export function getStudyGroupSlots(req, res) {
       error: err.message || 'Could not get study group slots.',
     });
   }
+}
+
+// Allows a group member to share a learning resource.
+export function shareLearningResource(req, res) {
+  const studyGroupId = Number(req.params.id);
+  const { title, url, description } = req.body ?? {};
+
+  if (!Number.isInteger(studyGroupId) || studyGroupId <= 0) {
+    return res.status(400).json({
+      error: 'A valid study group ID is required.',
+    });
+  }
+
+  if (!isNonEmptyString(title, { max: 200 })) {
+    return res.status(400).json({
+      error: 'Title is required and must be 200 characters or fewer.',
+    });
+  }
+
+  if (!isNonEmptyString(url, { max: 2000 })) {
+    return res.status(400).json({
+      error: 'A valid resource URL is required.',
+    });
+  }
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(url.trim());
+  } catch {
+    return res.status(400).json({
+      error: 'A valid resource URL is required.',
+    });
+  }
+
+  if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+    return res.status(400).json({
+      error: 'Resource URL must use HTTP or HTTPS.',
+    });
+  }
+
+  if (
+    description !== undefined &&
+    description !== null &&
+    description !== '' &&
+    !isNonEmptyString(description, { max: 1000 })
+  ) {
+    return res.status(400).json({
+      error: 'Description must be 1000 characters or fewer.',
+    });
+  }
+
+  const membership = isStudentInStudyGroup(
+    db,
+    studyGroupId,
+    req.studentId
+  );
+
+  if (!membership) {
+    return res.status(403).json({
+      error: 'You must be a member of this study group to share resources.',
+    });
+  }
+
+  const resource = createLearningResource(db, {
+    studyGroupId,
+    sharedBy: req.studentId,
+    title: title.trim(),
+    url: parsedUrl.toString(),
+    description: description?.trim() || null,
+  });
+
+  return res.status(201).json({
+    message: 'Learning resource shared successfully.',
+    resource,
+  });
+}
+
+// Allows a group member to view resources shared in the group.
+export function getLearningResources(req, res) {
+  const studyGroupId = Number(req.params.id);
+
+  if (!Number.isInteger(studyGroupId) || studyGroupId <= 0) {
+    return res.status(400).json({
+      error: 'A valid study group ID is required.',
+    });
+  }
+
+  const membership = isStudentInStudyGroup(
+    db,
+    studyGroupId,
+    req.studentId
+  );
+
+  if (!membership) {
+    return res.status(403).json({
+      error: 'You must be a member of this study group to view resources.',
+    });
+  }
+
+  const resources = findLearningResourcesByGroup(db, studyGroupId);
+
+  return res.status(200).json({
+    resources,
+  });
 }

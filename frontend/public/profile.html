@@ -31,26 +31,26 @@
 
         <div class="field">
           <label for="first_name">First name</label>
-          <input type="text" id="first_name" name="first_name" />
-          <div class="field-error" data-error-for="first_name"></div>
+          <input type="text" id="first_name" name="first_name" aria-describedby="first_name-error" />
+          <div class="field-error" id="first_name-error" data-error-for="first_name" aria-live="polite"></div>
         </div>
 
         <div class="field">
           <label for="last_name">Last name</label>
-          <input type="text" id="last_name" name="last_name" />
-          <div class="field-error" data-error-for="last_name"></div>
+          <input type="text" id="last_name" name="last_name" aria-describedby="last_name-error" />
+          <div class="field-error" id="last_name-error" data-error-for="last_name" aria-live="polite"></div>
         </div>
 
         <div class="field">
           <label for="course">Course</label>
-          <input type="text" id="course" name="course" placeholder="e.g. ENSE707" />
-          <div class="field-error" data-error-for="course"></div>
+          <input type="text" id="course" name="course" placeholder="e.g. ENSE707" aria-describedby="course-error" />
+          <div class="field-error" id="course-error" data-error-for="course" aria-live="polite"></div>
         </div>
 
         <div class="field">
           <label for="bio">About me</label>
-          <textarea id="bio" name="bio" placeholder="Tell other students a bit about yourself"></textarea>
-          <div class="field-error" data-error-for="bio"></div>
+          <textarea id="bio" name="bio" placeholder="Tell other students a bit about yourself" maxlength="2000" aria-describedby="bio-error"></textarea>
+          <div class="field-error" id="bio-error" data-error-for="bio" aria-live="polite"></div>
         </div>
 
         <button type="submit" class="primary" id="submit-btn">Save changes</button>

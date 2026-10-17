@@ -1,6 +1,6 @@
 import db from '../db/index.js';
 import { findById, updateStudent, toPublicProfile } from '../models/studentModel.js';
-import { isNonEmptyString } from '../utils/validate.js';
+import { isNonEmptyString, isValidBio, MAX_BIO_LENGTH } from '../utils/validate.js';
 
 // FR-02 / AC-04: an authenticated user can view their own profile.
 export function getProfile(req, res) {
@@ -31,7 +31,8 @@ export function updateProfile(req, res) {
     else fields.course = course === null ? null : course.trim();
   }
   if (bio !== undefined) {
-    if (bio !== null && typeof bio !== 'string') errors.push('bio must be a string or null.');
+    // DEF-02: a bio longer than MAX_BIO_LENGTH used to save unbounded.
+    if (!isValidBio(bio)) errors.push(`bio must be a string of ${MAX_BIO_LENGTH} characters or fewer, or null.`);
     else fields.bio = bio === null ? null : bio.trim();
   }
 

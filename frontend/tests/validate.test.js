@@ -6,6 +6,7 @@ import {
   validateLoginForm,
   validateRegisterForm,
   validateProfileForm,
+  validateCreateGroupForm,
 } from '../public/js/validate.js';
 
 test('isValidEmail / isValidPassword basics', () => {
@@ -72,4 +73,48 @@ test('validateProfileForm: rejects an overly long bio', () => {
     bio: 'x'.repeat(2001),
   });
   assert.ok(errors.bio);
+});
+
+test('validateCreateGroupForm: valid input produces no errors', () => {
+  const errors = validateCreateGroupForm({
+    group_name: 'ENSE707 Thursday Study Group',
+    course: 'ENSE707',
+    description: 'Weekly Thursday study session.',
+    capacity: '6',
+  });
+  assert.deepEqual(errors, {});
+});
+
+test('validateCreateGroupForm: capacity is optional - omitting it produces no error', () => {
+  const errors = validateCreateGroupForm({
+    group_name: 'ENSE707 Thursday Study Group',
+    course: 'ENSE707',
+    description: 'Weekly Thursday study session.',
+    capacity: '',
+  });
+  assert.equal(errors.capacity, undefined);
+});
+
+test('validateCreateGroupForm: flags a missing name, course and description', () => {
+  const errors = validateCreateGroupForm({ group_name: '  ', course: '', description: '' });
+  assert.ok(errors.group_name);
+  assert.ok(errors.course);
+  assert.ok(errors.description);
+});
+
+test('validateCreateGroupForm: rejects a capacity outside 2-20', () => {
+  const tooLow = validateCreateGroupForm({
+    group_name: 'Group',
+    course: 'ENSE707',
+    description: 'Desc.',
+    capacity: '1',
+  });
+  const tooHigh = validateCreateGroupForm({
+    group_name: 'Group',
+    course: 'ENSE707',
+    description: 'Desc.',
+    capacity: '21',
+  });
+  assert.ok(tooLow.capacity);
+  assert.ok(tooHigh.capacity);
 });

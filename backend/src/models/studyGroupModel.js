@@ -1,6 +1,78 @@
 // Data-access layer for study groups.
 // Raw SQL stays here so controllers remain focused on request handling.
 
+// FR-NEW (create group): a student creates a study group. The group starts
+// with exactly one slot (group_number 1, the creator-chosen capacity), and
+// the creator is automatically added to it as its first member - they
+// created the group in order to be in it, so this avoids a redundant
+// separate "now join the group you just made" step.
+export function createStudyGroup(db, { groupName, course, description, capacity, createdBy }) {
+  const groupResult = db
+    .prepare(`
+        INSERT INTO study_groups (group_name, course, description, created_by)
+        VALUES (?, ?, ?, ?)
+      `)
+    .run(groupName, course, description, createdBy);
+
+  const studyGroupId = groupResult.lastInsertRowid;
+
+  const slotResult = db
+    .prepare(`
+        INSERT INTO study_group_slots (study_group_id, group_number, capacity)
+        VALUES (?, 1, ?)
+      `)
+    .run(studyGroupId, capacity);
+
+  const slotId = slotResult.lastInsertRowid;
+
+  db.prepare(`
+      INSERT INTO study_group_members (slot_id, student_id)
+      VALUES (?, ?)
+    `).run(slotId, createdBy);
+
+  return {
+    id: studyGroupId,
+    groupName,
+    course,
+    description,
+    slotId,
+    groupNumber: 1,
+    capacity,
+    memberCount: 1,
+  };
+}
+
+// "My groups": every study group slot the student currently belongs to, with
+// the group's details and how full the slot is. A student can be in at most
+// one slot per group (joinStudyGroup moves them), so this is one row per group.
+export function findGroupsForStudent(db, studentId) {
+  return db
+    .prepare(`
+        SELECT
+          study_groups.id AS id,
+          study_groups.group_name,
+          study_groups.course,
+          study_groups.description,
+          study_group_slots.id AS slot_id,
+          study_group_slots.group_number,
+          study_group_slots.capacity,
+          (
+            SELECT COUNT(*)
+            FROM study_group_members AS all_members
+            WHERE all_members.slot_id = study_group_slots.id
+          ) AS member_count,
+          study_group_members.joined_at
+        FROM study_group_members
+        JOIN study_group_slots
+          ON study_group_slots.id = study_group_members.slot_id
+        JOIN study_groups
+          ON study_groups.id = study_group_slots.study_group_id
+        WHERE study_group_members.student_id = ?
+        ORDER BY study_group_members.joined_at DESC, study_group_members.id DESC
+      `)
+    .all(studentId);
+}
+
 export function findGroupsByCourse(db, course) {
   return db
     .prepare(`
@@ -143,6 +215,68 @@ export function findStudyGroupSlots(db, studyGroupId) {
         study_group_slots.group_number,
         study_group_slots.capacity
       ORDER BY study_group_slots.group_number ASC
+    `)
+    .all(studyGroupId);
+}
+
+
+// Checks whether a student belongs to a specific study group.
+export function isStudentInStudyGroup(db, studyGroupId, studentId) {
+  return db
+    .prepare(`
+      SELECT study_group_members.id
+      FROM study_group_members
+      JOIN study_group_slots
+        ON study_group_slots.id = study_group_members.slot_id
+      WHERE study_group_slots.study_group_id = ?
+        AND study_group_members.student_id = ?
+    `)
+    .get(studyGroupId, studentId);
+}
+
+// Adds a learning resource to a study group.
+export function createLearningResource(
+  db,
+  { studyGroupId, sharedBy, title, url, description }
+) {
+  const result = db
+    .prepare(`
+      INSERT INTO learning_resources
+        (study_group_id, shared_by, title, url, description)
+      VALUES (?, ?, ?, ?, ?)
+    `)
+    .run(studyGroupId, sharedBy, title, url, description || null);
+
+  return {
+    id: result.lastInsertRowid,
+    studyGroupId,
+    sharedBy,
+    title,
+    url,
+    description: description || null,
+  };
+}
+
+// Returns the learning resources shared in a study group.
+export function findLearningResourcesByGroup(db, studyGroupId) {
+  return db
+    .prepare(`
+      SELECT
+        learning_resources.id,
+        learning_resources.study_group_id,
+        learning_resources.shared_by,
+        learning_resources.title,
+        learning_resources.url,
+        learning_resources.description,
+        learning_resources.created_at,
+        students.first_name,
+        students.last_name
+      FROM learning_resources
+      JOIN students
+        ON students.id = learning_resources.shared_by
+      WHERE learning_resources.study_group_id = ?
+      ORDER BY learning_resources.created_at DESC,
+               learning_resources.id DESC
     `)
     .all(studyGroupId);
 }

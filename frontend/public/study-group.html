@@ -82,6 +82,49 @@
         Leave Group
       </button>
     </div>
+
+    <div class="card">
+      <h2>Learning Resources</h2>
+      <p class="subtitle">
+        Share useful learning resources with members of this study group.
+      </p>
+    
+      <form id="resource-form">
+        <label for="resource-title">Title</label>
+        <input
+          id="resource-title"
+          type="text"
+          maxlength="200"
+          required
+        />
+    
+        <label for="resource-url">Resource URL</label>
+        <input
+          id="resource-url"
+          type="url"
+          placeholder="https://example.com"
+          required
+        />
+    
+        <label for="resource-description">Description (optional)</label>
+        <textarea
+          id="resource-description"
+          maxlength="1000"
+        ></textarea>
+    
+        <button type="submit">Share Resource</button>
+      </form>
+    
+      <p id="resource-message" class="subtitle"></p>
+    
+      <h3>Shared Resources</h3>
+      <div id="resource-list">
+        <p>No resources shared yet.</p>
+      </div>
+    </div>
+
+
+
   </main>
 
   <script type="module" src="js/study-group.js"></script>

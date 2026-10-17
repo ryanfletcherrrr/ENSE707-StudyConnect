@@ -66,8 +66,22 @@ export const api = {
   register: (fields) => request('/auth/register', { method: 'POST', body: fields }),
   getProfile: () => request('/profile/me', { auth: true }),
   updateProfile: (fields) => request('/profile/me', { method: 'PUT', body: fields, auth: true }),
+  createStudyGroup: (fields) => request('/study-groups', { method: 'POST', body: fields, auth: true }),
+  getMyStudyGroups: () => request('/study-groups/mine', { auth: true }),
   searchStudyGroups: (course) => request(`/study-groups?course=${encodeURIComponent(course)}`, {auth: true}),
   getStudyGroupSlots: (studyGroupId) => request(`/study-groups/${studyGroupId}/slots`, {auth: true}),
   joinStudyGroup: (slotId) => request('/study-groups/join', {method: 'POST', body: { slotId }, auth: true}),
   leaveStudyGroup: (slotId) => request('/study-groups/leave', {method: 'DELETE', body: { slotId }, auth: true}),
+  
+  shareLearningResource: (studyGroupId, resource) =>
+    request(`/study-groups/${studyGroupId}/resources`, {
+      method: 'POST',
+      body: resource,
+      auth: true,
+    }),
+  
+  getLearningResources: (studyGroupId) =>
+    request(`/study-groups/${studyGroupId}/resources`, {
+      auth: true,
+    }),
 };

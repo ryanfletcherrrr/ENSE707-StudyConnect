@@ -1,6 +1,6 @@
 import db from '../db/index.js';
 import { findByEmail, createStudent, toPublicProfile } from '../models/studentModel.js';
-import { isValidEmail, isNonEmptyString, isValidPassword } from '../utils/validate.js';
+import { isValidEmail, isNonEmptyString, isValidPassword, isValidBio, MAX_BIO_LENGTH } from '../utils/validate.js';
 import { hashPassword, verifyPassword } from '../utils/password.js';
 import { signToken as signJwt } from '../utils/token.js';
 
@@ -49,7 +49,19 @@ export function register(req, res) {
   if (!isNonEmptyString(first_name, { max: 100 })) errors.push('first_name is required.');
   if (!isNonEmptyString(last_name, { max: 100 })) errors.push('last_name is required.');
   if (!isValidEmail(email)) errors.push('A valid email is required.');
-  if (!isValidPassword(password)) errors.push('Password must be at least 8 characters.');
+
+  // DEF-05: a non-string password used to produce the same message as a
+  // too-short one ("must be at least 8 characters"), which is misleading
+  // when the real problem is a type-confusion input (e.g. password: 123).
+  if (typeof password !== 'string' || password.length === 0) {
+    errors.push('Password is required.');
+  } else if (!isValidPassword(password)) {
+    errors.push('Password must be between 8 and 128 characters.');
+  }
+
+  // DEF-02: same unbounded-bio issue as profile update - registration also
+  // accepts a bio field, so it needs the same cap.
+  if (!isValidBio(bio)) errors.push(`bio must be a string of ${MAX_BIO_LENGTH} characters or fewer, or null.`);
 
   if (errors.length > 0) {
     return res.status(400).json({ error: 'Invalid registration details.', details: errors });

@@ -1,0 +1,102 @@
+name: CI
+
+# Task 5 quality gates. Every push/PR to main must pass, in order:
+#   1. Quality check - every JS file parses, no merge-conflict markers, no
+#      focused (.only) tests, no leftover debugger statements.
+#   2. Backend and frontend test suites, run with a coverage threshold
+#      (lines/branches/functions) so untested code cannot quietly grow.
+#   3. Smoke test - the API actually starts and answers /api/health.
+# Branch protection on main additionally requires this job to pass and a
+# reviewed pull request before merging.
+#
+# NOTE: the job name below is the required status check in branch protection.
+# Renaming it detaches the gate, so change both together.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build, test, and smoke-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Quality check (syntax and test hygiene)
+        run: node scripts/quality-check.mjs
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Run backend tests with coverage gate
+        working-directory: backend
+        shell: bash
+        run: |
+          npm run test:coverage | tee "$RUNNER_TEMP/backend-coverage.txt"
+          {
+            echo '### Backend coverage'
+            echo '```'
+            sed -n '/start of coverage report/,/end of coverage report/p' "$RUNNER_TEMP/backend-coverage.txt" | sed 's/^# //'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run frontend tests with coverage gate
+        working-directory: frontend
+        shell: bash
+        run: |
+          npm run test:coverage | tee "$RUNNER_TEMP/frontend-coverage.txt"
+          {
+            echo '### Frontend coverage'
+            echo '```'
+            sed -n '/start of coverage report/,/end of coverage report/p' "$RUNNER_TEMP/frontend-coverage.txt" | sed 's/^# //'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Smoke test - backend actually starts and answers /api/health
+        working-directory: backend
+        env:
+          PORT: 4000
+          DB_FILE: ':memory:'
+          JWT_SECRET: ci-smoke-test-secret
+        run: |
+          npm start &
+          SERVER_PID=$!
+
+          READY=""
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:4000/api/health > /dev/null 2>&1; then
+              READY="yes"
+              break
+            fi
+            sleep 1
+          done
+
+          if [ -z "$READY" ]; then
+            echo "Backend never became healthy within 15s"
+            kill "$SERVER_PID" 2>/dev/null || true
+            exit 1
+          fi
+
+          echo "Health check response:"
+          curl -sf http://localhost:4000/api/health
+
+          kill "$SERVER_PID"

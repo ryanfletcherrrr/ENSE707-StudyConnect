@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server/staticServer.js",
-    "test": "node --no-warnings --test tests/*.test.js"
+    "test": "node --no-warnings --test tests/*.test.js",
+    "lint": "node ../scripts/quality-check.mjs",
+    "test:coverage": "node --no-warnings --test --experimental-test-coverage --test-coverage-exclude=\"tests/**\" --test-coverage-lines=90 --test-coverage-branches=80 --test-coverage-functions=70 tests/*.test.js"
   },
   "engines": {
     "node": ">=22.5.0"

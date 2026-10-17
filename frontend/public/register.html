@@ -17,26 +17,26 @@
       <form id="register-form" novalidate>
         <div class="field">
           <label for="first_name">First name</label>
-          <input type="text" id="first_name" name="first_name" autocomplete="given-name" />
-          <div class="field-error" data-error-for="first_name"></div>
+          <input type="text" id="first_name" name="first_name" autocomplete="given-name" aria-describedby="first_name-error" />
+          <div class="field-error" id="first_name-error" data-error-for="first_name" aria-live="polite"></div>
         </div>
 
         <div class="field">
           <label for="last_name">Last name</label>
-          <input type="text" id="last_name" name="last_name" autocomplete="family-name" />
-          <div class="field-error" data-error-for="last_name"></div>
+          <input type="text" id="last_name" name="last_name" autocomplete="family-name" aria-describedby="last_name-error" />
+          <div class="field-error" id="last_name-error" data-error-for="last_name" aria-live="polite"></div>
         </div>
 
         <div class="field">
           <label for="email">Email</label>
-          <input type="email" id="email" name="email" autocomplete="username" placeholder="you@aut.ac.nz" />
-          <div class="field-error" data-error-for="email"></div>
+          <input type="email" id="email" name="email" autocomplete="username" placeholder="you@aut.ac.nz" aria-describedby="email-error" />
+          <div class="field-error" id="email-error" data-error-for="email" aria-live="polite"></div>
         </div>
 
         <div class="field">
           <label for="password">Password</label>
-          <input type="password" id="password" name="password" autocomplete="new-password" placeholder="At least 8 characters" />
-          <div class="field-error" data-error-for="password"></div>
+          <input type="password" id="password" name="password" autocomplete="new-password" placeholder="8-128 characters" maxlength="128" aria-describedby="password-error" />
+          <div class="field-error" id="password-error" data-error-for="password" aria-live="polite"></div>
         </div>
 
         <div class="field">
