@@ -7,6 +7,8 @@ import {
   joinGroup,
   getStudyGroupSlots,
   leaveGroup,
+  shareLearningResource,
+  getLearningResources,
 } from '../controllers/studyGroupController.js';
 
 
@@ -50,4 +52,18 @@ export default [
     path: '/api/study-groups/leave',
     handlers: [requireAuth, leaveGroup],
   },
+
+  {
+    method: 'POST',
+    path: '/api/study-groups/{id}/resources',
+    handlers: [requireAuth, shareLearningResource],
+  },
+  
+  {
+    method: 'GET',
+    path: '/api/study-groups/{id}/resources',
+    handlers: [requireAuth, getLearningResources],
+  },
+
+
 ];
