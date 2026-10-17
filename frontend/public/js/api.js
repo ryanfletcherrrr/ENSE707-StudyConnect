@@ -84,4 +84,22 @@ export const api = {
     request(`/study-groups/${studyGroupId}/resources`, {
       auth: true,
     }),
-};
+
+    getNotifications: () =>
+      request('/notifications', {
+        auth: true,
+      }),
+  
+    getNotification: (notificationId) =>
+      request(`/notifications/${notificationId}`, {
+        auth: true,
+      }),
+  
+    markNotificationAsRead: (notificationId) =>
+      request(`/notifications/${notificationId}/read`, {
+        method: 'PATCH',
+        auth: true,
+      }),
+
+
+  };
