@@ -5,6 +5,12 @@ const messageEl = document.getElementById('group-message');
 const groupDetailsEl = document.getElementById('group-details');
 const leaveGroupBtn = document.getElementById('leave-group-btn');
 const logoutBtn = document.getElementById('logout-btn');
+const resourceForm = document.getElementById('resource-form');
+const resourceTitle = document.getElementById('resource-title');
+const resourceUrl = document.getElementById('resource-url');
+const resourceDescription = document.getElementById('resource-description');
+const resourceMessage = document.getElementById('resource-message');
+const resourceList = document.getElementById('resource-list');
 
 if (!getToken()) {
     window.location.href = 'index.html';
@@ -50,6 +56,8 @@ async function loadStudyGroup() {
             `Members: ${selectedSlot.member_count} / ${selectedSlot.capacity}`;
 
         groupDetailsEl.appendChild(members);
+
+        await loadLearningResources();
     } catch (err) {
         if (err.status === 401) {
             clearToken();
@@ -101,3 +109,84 @@ logoutBtn.addEventListener('click', () => {
     clearToken();
     window.location.href = 'index.html';
 });
+
+async function loadLearningResources() {
+    try {
+      const { resources } = await api.getLearningResources(studyGroupId);
+  
+      resourceList.innerHTML = '';
+  
+      if (!resources || resources.length === 0) {
+        resourceList.innerHTML = '<p>No resources shared yet.</p>';
+        return;
+      }
+  
+      for (const resource of resources) {
+        const item = document.createElement('div');
+  
+        const title = document.createElement('strong');
+        title.textContent = resource.title;
+  
+        const link = document.createElement('a');
+        link.href = resource.url;
+        link.textContent = resource.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+  
+        const sharedBy = document.createElement('p');
+        sharedBy.textContent =
+          `Shared by ${resource.first_name} ${resource.last_name}`;
+  
+        item.appendChild(title);
+        item.appendChild(document.createElement('br'));
+        item.appendChild(link);
+  
+        if (resource.description) {
+          const description = document.createElement('p');
+          description.textContent = resource.description;
+          item.appendChild(description);
+        }
+  
+        item.appendChild(sharedBy);
+        resourceList.appendChild(item);
+      }
+    } catch (err) {
+      if (err.status === 401) {
+        clearToken();
+        window.location.href = 'index.html';
+        return;
+      }
+  
+      resourceList.innerHTML = '<p>Could not load learning resources.</p>';
+    }
+  }
+
+  resourceForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+  
+    resourceMessage.textContent = '';
+  
+    const resource = {
+      title: resourceTitle.value.trim(),
+      url: resourceUrl.value.trim(),
+      description: resourceDescription.value.trim(),
+    };
+  
+    try {
+      await api.shareLearningResource(studyGroupId, resource);
+  
+      resourceMessage.textContent = 'Learning resource shared successfully.';
+      resourceForm.reset();
+  
+      await loadLearningResources();
+    } catch (err) {
+      if (err.status === 401) {
+        clearToken();
+        window.location.href = 'index.html';
+        return;
+      }
+  
+      resourceMessage.textContent =
+        err.message || 'Could not share learning resource.';
+    }
+  });

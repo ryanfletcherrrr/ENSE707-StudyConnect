@@ -72,4 +72,16 @@ export const api = {
   getStudyGroupSlots: (studyGroupId) => request(`/study-groups/${studyGroupId}/slots`, {auth: true}),
   joinStudyGroup: (slotId) => request('/study-groups/join', {method: 'POST', body: { slotId }, auth: true}),
   leaveStudyGroup: (slotId) => request('/study-groups/leave', {method: 'DELETE', body: { slotId }, auth: true}),
+  
+  shareLearningResource: (studyGroupId, resource) =>
+    request(`/study-groups/${studyGroupId}/resources`, {
+      method: 'POST',
+      body: resource,
+      auth: true,
+    }),
+  
+  getLearningResources: (studyGroupId) =>
+    request(`/study-groups/${studyGroupId}/resources`, {
+      auth: true,
+    }),
 };

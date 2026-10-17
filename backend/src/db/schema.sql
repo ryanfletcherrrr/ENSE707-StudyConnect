@@ -56,3 +56,18 @@ CREATE INDEX IF NOT EXISTS idx_study_group_members_slot
 
 CREATE INDEX IF NOT EXISTS idx_study_group_members_student
     ON study_group_members(student_id);
+
+    CREATE TABLE IF NOT EXISTS learning_resources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    study_group_id INTEGER NOT NULL,
+    shared_by INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    description TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (study_group_id) REFERENCES study_groups(id),
+    FOREIGN KEY (shared_by) REFERENCES students(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_learning_resources_group
+    ON learning_resources(study_group_id);

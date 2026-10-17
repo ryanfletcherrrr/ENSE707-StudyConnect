@@ -218,3 +218,65 @@ export function findStudyGroupSlots(db, studyGroupId) {
     `)
     .all(studyGroupId);
 }
+
+
+// Checks whether a student belongs to a specific study group.
+export function isStudentInStudyGroup(db, studyGroupId, studentId) {
+  return db
+    .prepare(`
+      SELECT study_group_members.id
+      FROM study_group_members
+      JOIN study_group_slots
+        ON study_group_slots.id = study_group_members.slot_id
+      WHERE study_group_slots.study_group_id = ?
+        AND study_group_members.student_id = ?
+    `)
+    .get(studyGroupId, studentId);
+}
+
+// Adds a learning resource to a study group.
+export function createLearningResource(
+  db,
+  { studyGroupId, sharedBy, title, url, description }
+) {
+  const result = db
+    .prepare(`
+      INSERT INTO learning_resources
+        (study_group_id, shared_by, title, url, description)
+      VALUES (?, ?, ?, ?, ?)
+    `)
+    .run(studyGroupId, sharedBy, title, url, description || null);
+
+  return {
+    id: result.lastInsertRowid,
+    studyGroupId,
+    sharedBy,
+    title,
+    url,
+    description: description || null,
+  };
+}
+
+// Returns the learning resources shared in a study group.
+export function findLearningResourcesByGroup(db, studyGroupId) {
+  return db
+    .prepare(`
+      SELECT
+        learning_resources.id,
+        learning_resources.study_group_id,
+        learning_resources.shared_by,
+        learning_resources.title,
+        learning_resources.url,
+        learning_resources.description,
+        learning_resources.created_at,
+        students.first_name,
+        students.last_name
+      FROM learning_resources
+      JOIN students
+        ON students.id = learning_resources.shared_by
+      WHERE learning_resources.study_group_id = ?
+      ORDER BY learning_resources.created_at DESC,
+               learning_resources.id DESC
+    `)
+    .all(studyGroupId);
+}

@@ -7,6 +7,9 @@ import {
   joinStudyGroup,
   findStudyGroupSlots,
   leaveStudyGroup,
+  isStudentInStudyGroup,
+  createLearningResource,
+  findLearningResourcesByGroup,
 } from '../models/studyGroupModel.js';
 import { isNonEmptyString } from '../utils/validate.js';
 
@@ -174,4 +177,108 @@ export function getStudyGroupSlots(req, res) {
       error: err.message || 'Could not get study group slots.',
     });
   }
+}
+
+// Allows a group member to share a learning resource.
+export function shareLearningResource(req, res) {
+  const studyGroupId = Number(req.params.id);
+  const { title, url, description } = req.body ?? {};
+
+  if (!Number.isInteger(studyGroupId) || studyGroupId <= 0) {
+    return res.status(400).json({
+      error: 'A valid study group ID is required.',
+    });
+  }
+
+  if (!isNonEmptyString(title, { max: 200 })) {
+    return res.status(400).json({
+      error: 'Title is required and must be 200 characters or fewer.',
+    });
+  }
+
+  if (!isNonEmptyString(url, { max: 2000 })) {
+    return res.status(400).json({
+      error: 'A valid resource URL is required.',
+    });
+  }
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(url.trim());
+  } catch {
+    return res.status(400).json({
+      error: 'A valid resource URL is required.',
+    });
+  }
+
+  if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+    return res.status(400).json({
+      error: 'Resource URL must use HTTP or HTTPS.',
+    });
+  }
+
+  if (
+    description !== undefined &&
+    description !== null &&
+    description !== '' &&
+    !isNonEmptyString(description, { max: 1000 })
+  ) {
+    return res.status(400).json({
+      error: 'Description must be 1000 characters or fewer.',
+    });
+  }
+
+  const membership = isStudentInStudyGroup(
+    db,
+    studyGroupId,
+    req.studentId
+  );
+
+  if (!membership) {
+    return res.status(403).json({
+      error: 'You must be a member of this study group to share resources.',
+    });
+  }
+
+  const resource = createLearningResource(db, {
+    studyGroupId,
+    sharedBy: req.studentId,
+    title: title.trim(),
+    url: parsedUrl.toString(),
+    description: description?.trim() || null,
+  });
+
+  return res.status(201).json({
+    message: 'Learning resource shared successfully.',
+    resource,
+  });
+}
+
+// Allows a group member to view resources shared in the group.
+export function getLearningResources(req, res) {
+  const studyGroupId = Number(req.params.id);
+
+  if (!Number.isInteger(studyGroupId) || studyGroupId <= 0) {
+    return res.status(400).json({
+      error: 'A valid study group ID is required.',
+    });
+  }
+
+  const membership = isStudentInStudyGroup(
+    db,
+    studyGroupId,
+    req.studentId
+  );
+
+  if (!membership) {
+    return res.status(403).json({
+      error: 'You must be a member of this study group to view resources.',
+    });
+  }
+
+  const resources = findLearningResourcesByGroup(db, studyGroupId);
+
+  return res.status(200).json({
+    resources,
+  });
 }
