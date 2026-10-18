@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -30,18 +31,68 @@
 
       <div id="group-details"></div>
 
-      <button id="leave-group-btn" type="button">
-        Leave Group
-      </button>
+      <section class="chat-section" aria-label="Study group chat">
+        <div class="chat-layout">
+          <aside class="chat-members">
+            <h3>Members</h3>
 
+            <div id="chat-members-list"></div>
+
+            <button id="leave-group-btn" type="button">
+              Leave Group
+            </button>
+          </aside>
+
+          <div class="chat-main">
+            <div
+              id="chat-messages"
+              class="chat-messages"
+              role="log"
+              aria-live="polite"
+              aria-label="Chat messages"
+            >
+              <p class="chat-empty">
+                No messages yet. Start the conversation!
+              </p>
+            </div>
+
+            <form id="chat-form" class="chat-form">
+              <label for="chat-input">Message</label>
+
+              <div class="chat-input-row">
+                <input
+                  id="chat-input"
+                  name="message"
+                  type="text"
+                  placeholder="Type a message..."
+                  maxlength="1000"
+                  autocomplete="off"
+                  required
+                />
+
+                <button id="chat-send-btn" type="submit">
+                  Send
+                </button>
+              </div>
+
+              <p
+                id="chat-status"
+                class="subtitle"
+                aria-live="polite"
+              ></p>
+            </form>
+          </div>
+        </div>
+      </section>
     </div>
 
     <div class="card">
       <h2>Learning Resources</h2>
+
       <p class="subtitle">
         Share useful learning resources with members of this study group.
       </p>
-    
+
       <form id="resource-form">
         <label for="resource-title">Title</label>
         <input
@@ -50,7 +101,7 @@
           maxlength="200"
           required
         />
-    
+
         <label for="resource-url">Resource URL</label>
         <input
           id="resource-url"
@@ -58,28 +109,27 @@
           placeholder="https://example.com"
           required
         />
-    
+
         <label for="resource-description">Description (optional)</label>
         <textarea
           id="resource-description"
           maxlength="1000"
         ></textarea>
-    
+
         <button type="submit">Share Resource</button>
       </form>
-    
+
       <p id="resource-message" class="subtitle"></p>
-    
+
       <h3>Shared Resources</h3>
+
       <div id="resource-list">
         <p>No resources shared yet.</p>
       </div>
     </div>
-
-
-
   </main>
 
   <script type="module" src="js/study-group.js"></script>
+  <script type="module" src="js/group-chat.js"></script>
 </body>
 </html>

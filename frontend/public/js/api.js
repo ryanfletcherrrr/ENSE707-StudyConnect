@@ -101,5 +101,21 @@ export const api = {
         auth: true,
       }),
 
+  getChatMessages: (slotId) =>
+    request(`/chat/slots/${slotId}/messages`, {
+      auth: true,
+    }),
 
-  };
+  sendChatMessage: (slotId, message) =>
+    request(`/chat/slots/${slotId}/messages`, {
+      method: 'POST',
+      body: { message },
+      auth: true,
+    }),
+
+  getChatMembers: (slotId) =>
+    request(`/chat/slots/${slotId}/members`, {
+      auth: true,
+    }),
+
+};
