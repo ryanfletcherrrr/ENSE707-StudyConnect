@@ -57,7 +57,7 @@ CREATE INDEX IF NOT EXISTS idx_study_group_members_slot
 CREATE INDEX IF NOT EXISTS idx_study_group_members_student
     ON study_group_members(student_id);
 
-    CREATE TABLE IF NOT EXISTS learning_resources (
+CREATE TABLE IF NOT EXISTS learning_resources (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     study_group_id INTEGER NOT NULL,
     shared_by INTEGER NOT NULL,
@@ -72,7 +72,8 @@ CREATE INDEX IF NOT EXISTS idx_study_group_members_student
 CREATE INDEX IF NOT EXISTS idx_learning_resources_group
     ON learning_resources(study_group_id);
 
-    CREATE TABLE IF NOT EXISTS notifications (
+-- Notifications table: restored so tests and notification model work
+CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id INTEGER NOT NULL,
     type TEXT NOT NULL,
@@ -85,3 +86,23 @@ CREATE INDEX IF NOT EXISTS idx_learning_resources_group
 
 CREATE INDEX IF NOT EXISTS idx_notifications_student
     ON notifications(student_id);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at
+    ON notifications(created_at);
+
+-- Group chat messages table: keep new feature table
+CREATE TABLE IF NOT EXISTS group_chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slot_id INTEGER NOT NULL,
+    student_id INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (slot_id) REFERENCES study_group_slots(id),
+    FOREIGN KEY (student_id) REFERENCES students(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_group_chat_messages_slot
+    ON group_chat_messages(slot_id);
+
+CREATE INDEX IF NOT EXISTS idx_group_chat_messages_student
+    ON group_chat_messages(student_id);
