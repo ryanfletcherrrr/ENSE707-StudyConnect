@@ -52,7 +52,7 @@ CREATE INDEX IF NOT EXISTS idx_study_group_members_slot
 CREATE INDEX IF NOT EXISTS idx_study_group_members_student
     ON study_group_members(student_id);
 
-    CREATE TABLE IF NOT EXISTS learning_resources (
+CREATE TABLE IF NOT EXISTS learning_resources (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     study_group_id INTEGER NOT NULL,
     shared_by INTEGER NOT NULL,
@@ -82,3 +82,53 @@ CREATE INDEX IF NOT EXISTS idx_group_chat_messages_slot
 
 CREATE INDEX IF NOT EXISTS idx_group_chat_messages_student
     ON group_chat_messages(student_id);
+
+CREATE TABLE IF NOT EXISTS study_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    study_group_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    location TEXT,
+    status TEXT NOT NULL DEFAULT 'scheduled'
+        CHECK (status IN ('scheduled', 'cancelled')),
+    created_by INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (study_group_id) REFERENCES study_groups(id),
+    FOREIGN KEY (created_by) REFERENCES students(id),
+    CHECK (end_time > start_time)
+);
+
+CREATE INDEX IF NOT EXISTS idx_study_events_group
+    ON study_events(study_group_id);
+
+CREATE INDEX IF NOT EXISTS idx_study_events_start_time
+    ON study_events(start_time);
+
+CREATE INDEX IF NOT EXISTS idx_study_events_creator
+    ON study_events(created_by);
+
+CREATE TABLE IF NOT EXISTS study_event_participants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL,
+    student_id INTEGER NOT NULL,
+    invitation_status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (
+            invitation_status IN ('pending', 'accepted', 'declined')
+        ),
+    invited_at TEXT NOT NULL DEFAULT (datetime('now')),
+    responded_at TEXT,
+    FOREIGN KEY (event_id) REFERENCES study_events(id),
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    UNIQUE (event_id, student_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_study_event_participants_event
+    ON study_event_participants(event_id);
+
+CREATE INDEX IF NOT EXISTS idx_study_event_participants_student
+    ON study_event_participants(student_id);
+
+CREATE INDEX IF NOT EXISTS idx_study_event_participants_status
+    ON study_event_participants(invitation_status);
