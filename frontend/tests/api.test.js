@@ -177,3 +177,48 @@ test('api.getMyStudyGroups sends an authenticated GET to /study-groups/mine', as
     clearToken();
   }
 });
+
+
+test('api.getNotifications sends an authenticated GET request', async () => {
+  setToken('notification-test-token');
+
+  const stub = stubFetch((url, options) => {
+    assert.ok(url.endsWith('/notifications'));
+    assert.equal(options.method, 'GET');
+    assert.equal(options.headers.Authorization, 'Bearer notification-test-token');
+
+    return jsonResponse(200, { notifications: [] });
+  });
+
+  try {
+    const result = await api.getNotifications();
+    assert.deepEqual(result.notifications, []);
+    assert.equal(stub.calls.length, 1);
+  } finally {
+    stub.restore();
+    clearToken();
+  }
+});
+
+test('api.markNotificationAsRead sends an authenticated PATCH request', async () => {
+  setToken('notification-test-token');
+
+  const stub = stubFetch((url, options) => {
+    assert.ok(url.endsWith('/notifications/16/read'));
+    assert.equal(options.method, 'PATCH');
+    assert.equal(options.headers.Authorization, 'Bearer notification-test-token');
+
+    return jsonResponse(200, {
+      notification: { id: 16, is_read: 1 }
+    });
+  });
+
+  try {
+    const result = await api.markNotificationAsRead(16);
+    assert.equal(result.notification.is_read, 1);
+    assert.equal(stub.calls.length, 1);
+  } finally {
+    stub.restore();
+    clearToken();
+  }
+});
