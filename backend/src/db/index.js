@@ -147,6 +147,26 @@ export function createDb(file = dbFile) {
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   db.exec(schema);
 
+  // Hotfix: ensure notifications table exists even if schema drift occurs.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      is_read INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (student_id) REFERENCES students(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_notifications_student
+      ON notifications(student_id);
+
+    CREATE INDEX IF NOT EXISTS idx_notifications_created_at
+      ON notifications(created_at);
+  `);
+
   return db;
 }
 

@@ -5,6 +5,7 @@ import profileRoutes from './routes/profileRoutes.js';
 import { readJsonBody, enhanceResponse, applyCors, findRoute, runHandlerChain } from './http/httpUtils.js';
 import studyGroupRoutes from './routes/studyGroupRoutes.js';
 import studyEventRoutes from './routes/studyEventRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 const healthRoute = {
   method: 'GET',
@@ -18,6 +19,7 @@ const routes = [
   ...profileRoutes,
   ...studyGroupRoutes,
   ...studyEventRoutes,
+  ...notificationRoutes,
 ];
 
 // Builds a plain Node http.Server (no Express - see README.md for why).

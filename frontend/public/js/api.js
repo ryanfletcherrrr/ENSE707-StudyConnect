@@ -111,9 +111,6 @@ export const api = {
   getMyStudyEvents: () =>
     request('/study-events', { auth: true }),
 
-  getMyStudyEvents: () =>
-    request('/study-events', { auth: true }),
-
   getMyManagedStudyEvents: () =>
     request('/study-events/managed', { auth: true }),
 
@@ -137,6 +134,22 @@ export const api = {
   cancelStudyEvent: (eventId) =>
     request(`/study-events/${eventId}`, {
       method: 'DELETE',
+      auth: true,
+    }),
+
+  getNotifications: () =>
+    request('/notifications', {
+      auth: true,
+    }),
+
+  getNotification: (notificationId) =>
+    request(`/notifications/${notificationId}`, {
+      auth: true,
+    }),
+
+  markNotificationAsRead: (notificationId) =>
+    request(`/notifications/${notificationId}/read`, {
+      method: 'PATCH',
       auth: true,
     }),
 };
