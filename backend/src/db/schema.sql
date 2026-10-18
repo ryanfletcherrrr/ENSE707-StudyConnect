@@ -1,3 +1,8 @@
+-- StudyConnect prototype schema
+-- Covers FR-01 (login) and FR-02 (profile management) only.
+-- Additional tables (groups, messages, resources, events) are out of scope
+-- for this first slice and will be added when those features are built.
+
 CREATE TABLE IF NOT EXISTS students (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name    TEXT NOT NULL,
@@ -67,15 +72,15 @@ CREATE TABLE IF NOT EXISTS learning_resources (
 CREATE INDEX IF NOT EXISTS idx_learning_resources_group
     ON learning_resources(study_group_id);
 
-CREATE TABLE IF NOT EXISTS group_chat_messages (
 -- Notifications table: restored so tests and notification model work
 CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    slot_id INTEGER NOT NULL,
     student_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    title TEXT NOT NULL,
     message TEXT NOT NULL,
+    is_read INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (slot_id) REFERENCES study_group_slots(id),
     FOREIGN KEY (student_id) REFERENCES students(id)
 );
 

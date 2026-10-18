@@ -85,6 +85,22 @@ export const api = {
       auth: true,
     }),
 
+    getNotifications: () =>
+      request('/notifications', {
+        auth: true,
+      }),
+  
+    getNotification: (notificationId) =>
+      request(`/notifications/${notificationId}`, {
+        auth: true,
+      }),
+  
+    markNotificationAsRead: (notificationId) =>
+      request(`/notifications/${notificationId}/read`, {
+        method: 'PATCH',
+        auth: true,
+      }),
+
   getChatMessages: (slotId) =>
     request(`/chat/slots/${slotId}/messages`, {
       auth: true,
@@ -101,4 +117,5 @@ export const api = {
     request(`/chat/slots/${slotId}/members`, {
       auth: true,
     }),
+
 };
