@@ -222,3 +222,67 @@ test('api.markNotificationAsRead sends an authenticated PATCH request', async ()
     clearToken();
   }
 });
+
+test('api.getChatMessages sends an authenticated GET request for the slot', async () => {
+  setToken('chat-test-token');
+
+  const stub = stubFetch((url, options) => {
+    assert.ok(url.endsWith('/chat/slots/7/messages'));
+    assert.equal(options.method, 'GET');
+    assert.equal(options.headers.Authorization, 'Bearer chat-test-token');
+
+    return jsonResponse(200, { messages: [] });
+  });
+
+  try {
+    const result = await api.getChatMessages(7);
+    assert.deepEqual(result.messages, []);
+    assert.equal(stub.calls.length, 1);
+  } finally {
+    stub.restore();
+    clearToken();
+  }
+});
+
+test('api.sendChatMessage POSTs the message body with the token', async () => {
+  setToken('chat-test-token');
+
+  const stub = stubFetch((url, options) => {
+    assert.ok(url.endsWith('/chat/slots/7/messages'));
+    assert.equal(options.method, 'POST');
+    assert.equal(options.headers.Authorization, 'Bearer chat-test-token');
+    assert.deepEqual(JSON.parse(options.body), { message: 'See you at 3pm' });
+
+    return jsonResponse(201, { message: { id: 1, message: 'See you at 3pm' } });
+  });
+
+  try {
+    const result = await api.sendChatMessage(7, 'See you at 3pm');
+    assert.equal(result.message.id, 1);
+    assert.equal(stub.calls.length, 1);
+  } finally {
+    stub.restore();
+    clearToken();
+  }
+});
+
+test('api.getChatMembers sends an authenticated GET request for the slot', async () => {
+  setToken('chat-test-token');
+
+  const stub = stubFetch((url, options) => {
+    assert.ok(url.endsWith('/chat/slots/7/members'));
+    assert.equal(options.method, 'GET');
+    assert.equal(options.headers.Authorization, 'Bearer chat-test-token');
+
+    return jsonResponse(200, { members: [] });
+  });
+
+  try {
+    const result = await api.getChatMembers(7);
+    assert.deepEqual(result.members, []);
+    assert.equal(stub.calls.length, 1);
+  } finally {
+    stub.restore();
+    clearToken();
+  }
+});
