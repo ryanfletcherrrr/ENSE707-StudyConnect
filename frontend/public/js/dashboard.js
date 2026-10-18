@@ -37,13 +37,141 @@ function formatDateTime(value) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return value || 'Not specified';
+    return 'Not specified';
   }
 
   return date.toLocaleString([], {
     dateStyle: 'medium',
     timeStyle: 'short',
   });
+}
+
+function getDateParts(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return { month: 'TBA', day: '--' };
+  }
+
+  return {
+    month: date.toLocaleDateString([], { month: 'short' }).toUpperCase(),
+    day: date.toLocaleDateString([], { day: '2-digit' }),
+  };
+}
+
+function createInfoRow(icon, label, value) {
+  const row = createElement('div', 'dashboard-event__info-row');
+  const iconEl = createElement('span', 'dashboard-event__icon', icon);
+  const textEl = createElement('span', 'dashboard-event__info-text');
+
+  textEl.append(
+    createElement('span', 'dashboard-event__info-label', label),
+    createElement('span', 'dashboard-event__info-value', value)
+  );
+
+  row.append(iconEl, textEl);
+
+  return row;
+}
+
+function createEventCard(event) {
+  const card = createElement('article', 'dashboard-event');
+
+  const header = createElement('div', 'dashboard-event__header');
+  const dateBadge = createElement('div', 'dashboard-event__date');
+  const dateParts = getDateParts(event.start_time);
+
+  dateBadge.append(
+    createElement('span', 'dashboard-event__month', dateParts.month),
+    createElement('span', 'dashboard-event__day', dateParts.day)
+  );
+
+  const heading = createElement('div', 'dashboard-event__heading');
+
+  heading.append(
+    createElement(
+      'h3',
+      'dashboard-event__title',
+      event.title || 'Study Session'
+    ),
+    createElement(
+      'p',
+      'dashboard-event__group',
+      event.group_name || 'Study group session'
+    )
+  );
+
+  const status = createElement(
+    'span',
+    'dashboard-event__status',
+    'Upcoming'
+  );
+
+  header.append(dateBadge, heading, status);
+
+  const divider = createElement('div', 'dashboard-event__divider');
+
+  const details = createElement('div', 'dashboard-event__details');
+
+  details.append(
+    createInfoRow(
+      '◷',
+      'Date & time',
+      formatDateTime(event.start_time)
+    ),
+    createInfoRow(
+      '◴',
+      'Ends',
+      formatDateTime(event.end_time)
+    ),
+    createInfoRow(
+      '⌖',
+      'Location',
+      event.location || 'Not specified'
+    )
+  );
+
+  const footer = createElement('div', 'dashboard-event__footer');
+
+  const groupLabel = createElement(
+    'span',
+    'dashboard-event__footer-text',
+    event.group_name || 'StudyConnect event'
+  );
+
+  footer.append(groupLabel);
+
+  if (event.invitation_status) {
+    const invitation = createElement(
+      'span',
+      'dashboard-event__invitation',
+      `Invitation: ${event.invitation_status}`
+    );
+
+    footer.append(invitation);
+  } else if (Number(event.created_by) === Number(event.student_id)) {
+    footer.append(
+      createElement(
+        'span',
+        'dashboard-event__invitation',
+        'Created by you'
+      )
+    );
+  }
+
+  card.append(header, divider, details, footer);
+
+  if (event.description) {
+    const description = createElement(
+      'p',
+      'dashboard-event__description',
+      event.description
+    );
+
+    card.insertBefore(description, divider);
+  }
+
+  return card;
 }
 
 async function init() {
@@ -70,6 +198,9 @@ async function init() {
 }
 
 async function loadMyGroups() {
+  myGroupsListEl.replaceChildren();
+  myGroupsMessageEl.textContent = 'Loading your study groups…';
+
   try {
     const { groups } = await api.getMyStudyGroups();
 
@@ -128,9 +259,9 @@ async function loadDashboardEvents() {
         const startTime = new Date(event.start_time).getTime();
 
         return (
-          event.status !== 'cancelled' &&
+          event.status === 'scheduled' &&
           !Number.isNaN(startTime) &&
-          startTime >= now
+          startTime > now
         );
       })
       .sort(
@@ -145,8 +276,8 @@ async function loadDashboardEvents() {
       dashboardEventsEl.append(
         createElement(
           'p',
-          'subtitle',
-          'You have no upcoming study events.'
+          'dashboard-event__empty',
+          'No upcoming study sessions. Create an event or join one you have been invited to.'
         )
       );
       return;
@@ -155,58 +286,7 @@ async function loadDashboardEvents() {
     const eventsToShow = upcomingEvents.slice(0, 3);
 
     for (const event of eventsToShow) {
-      const card = createElement(
-        'article',
-        'my-group dashboard-event'
-      );
-
-      const title = createElement(
-        'h3',
-        '',
-        event.title || 'Untitled event'
-      );
-
-      const start = createElement(
-        'p',
-        'my-group__meta',
-        `Starts: ${formatDateTime(event.start_time)}`
-      );
-
-      const end = createElement(
-        'p',
-        'my-group__meta',
-        `Ends: ${formatDateTime(event.end_time)}`
-      );
-
-      const location = createElement(
-        'p',
-        'my-group__meta',
-        `Location: ${event.location || 'Not specified'}`
-      );
-
-      card.append(title, start, end, location);
-
-      if (event.group_name) {
-        card.append(
-          createElement(
-            'p',
-            'my-group__meta',
-            `Study group: ${event.group_name}`
-          )
-        );
-      }
-
-      if (event.invitation_status) {
-        card.append(
-          createElement(
-            'p',
-            'my-group__meta',
-            `Invitation: ${event.invitation_status}`
-          )
-        );
-      }
-
-      dashboardEventsEl.append(card);
+      dashboardEventsEl.append(createEventCard(event));
     }
 
     if (upcomingEvents.length > eventsToShow.length) {
