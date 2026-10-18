@@ -287,3 +287,18 @@ export function isStudentInStudyGroup(db, studyGroupId, studentId) {
         LIMIT 1
     `).get(studyGroupId, studentId);
 }
+
+export function findStudyEventsCreatedByStudent(db, studentId) {
+    return db.prepare(`
+        SELECT
+            se.*,
+            sg.group_name
+        FROM study_events se
+        LEFT JOIN study_groups sg
+            ON sg.id = se.study_group_id
+        WHERE se.created_by = ?
+            AND se.status = 'scheduled'
+            AND se.start_time > ?
+        ORDER BY se.start_time ASC
+    `).all(studentId, new Date().toISOString());
+}

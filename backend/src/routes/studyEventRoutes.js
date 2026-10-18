@@ -1,13 +1,13 @@
-
 import { requireAuth } from '../middleware/auth.js';
 
 import {
     getMyStudyEvents,
+    getMyManagedStudyEvents,
     getStudyEvent,
-    searchStudyEventStudents,
     createStudyEventHandler,
     updateStudyEventHandler,
     cancelStudyEventHandler,
+    searchStudyEventStudents,
 } from '../controllers/studyEventController.js';
 
 export default [
@@ -20,6 +20,11 @@ export default [
         method: 'GET',
         path: '/api/study-events/students',
         handlers: [requireAuth, searchStudyEventStudents],
+    },
+    {
+        method: 'GET',
+        path: '/api/study-events/managed',
+        handlers: [requireAuth, getMyManagedStudyEvents],
     },
     {
         method: 'GET',

@@ -102,7 +102,7 @@ export const api = {
       auth: true,
     }),
 
-    
+
   searchStudyEventStudents: (search = '') =>
     request(`/study-events/students?search=${encodeURIComponent(search)}`, {
       auth: true,
@@ -110,6 +110,12 @@ export const api = {
 
   getMyStudyEvents: () =>
     request('/study-events', { auth: true }),
+
+  getMyStudyEvents: () =>
+    request('/study-events', { auth: true }),
+
+  getMyManagedStudyEvents: () =>
+    request('/study-events/managed', { auth: true }),
 
   getStudyEvent: (eventId) =>
     request(`/study-events/${eventId}`, { auth: true }),

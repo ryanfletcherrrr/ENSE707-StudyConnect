@@ -4,6 +4,7 @@ import {
     createStudyEvent,
     findStudyEventById,
     findStudyEventsForStudent,
+    findStudyEventsCreatedByStudent,
     findStudyEventParticipants,
     findStudyGroupById,
     findStudentsByIds,
@@ -128,6 +129,23 @@ export function getMyStudyEvents(req, res) {
     const events = findStudyEventsForStudent(db, req.studentId);
 
     return res.status(200).json({ events });
+}
+
+export function getMyManagedStudyEvents(req, res) {
+    try {
+        const events = findStudyEventsCreatedByStudent(
+            db,
+            req.studentId
+        );
+
+        return res.status(200).json({ events });
+    } catch (error) {
+        console.error('Error retrieving managed study events:', error);
+
+        return res.status(500).json({
+            message: 'Failed to retrieve managed study events.',
+        });
+    }
 }
 
 export function searchStudyEventStudents(req, res) {
