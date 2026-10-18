@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Events · AUT StudyConnect</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+    <div class="top-bar">
+        <div class="top-bar__brand">
+            <a href="dashboard.html">AUT StudyConnect</a>
+        </div>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="profile.html">Profile</a>
+            <button id="logout-btn" type="button">Log out</button>
+        </nav>
+    </div>
+
+    <main class="wide events-page">
+        <section class="card">
+            <h1>Study Events</h1>
+            <p class="subtitle">
+                Organise study sessions and manage your upcoming events.
+            </p>
+
+            <div id="events-message" class="message" role="status" aria-live="polite"></div>
+
+            <div class="events-heading">
+                <h2>My upcoming events</h2>
+                <button id="show-create-btn" class="primary" type="button">
+                    + Create event
+                </button>
+            </div>
+
+            <div id="events-list" aria-live="polite">
+                <p class="subtitle">Loading events…</p>
+            </div>
+        </section>
+
+        <section id="event-form-card" class="card" hidden>
+            <h2 id="event-form-heading">Create a study event</h2>
+
+            <form id="event-form">
+                <div class="field">
+                    <label for="study-group">Study group</label>
+                    <select id="study-group" required>
+                        <option value="">Loading your groups…</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="event-title">Event title</label>
+                    <input id="event-title" type="text" maxlength="200" placeholder="e.g. Assignment study session"
+                        required />
+                </div>
+
+                <div class="field">
+                    <label for="event-description">Description</label>
+                    <textarea id="event-description" maxlength="1000" placeholder="What will you work on?"></textarea>
+                </div>
+
+                <div class="field">
+                    <label for="start-time">Start date and time</label>
+                    <input id="start-time" type="datetime-local" required />
+                </div>
+
+                <div class="field">
+                    <label for="end-time">End date and time</label>
+                    <input id="end-time" type="datetime-local" required />
+                </div>
+
+                <div class="field">
+                    <label for="event-location">Location</label>
+                    <input id="event-location" type="text" maxlength="500" placeholder="e.g. AUT Library or online" />
+                </div>
+
+                <div class="field">
+                    <label for="student-search">Invite registered students</label>
+                    <input id="student-search" type="search" placeholder="Search by name, email, or course"
+                        autocomplete="off" />
+                    <p class="subtitle">Search for students and select everyone you want to invite.</p>
+                    <div id="student-search-results" aria-live="polite"></div>
+                    <div id="selected-invitees"></div>
+                </div>
+
+                <div class="event-actions">
+                    <button id="save-event-btn" class="primary" type="submit">
+                        Create event
+                    </button>
+                    <button id="cancel-form-btn" class="secondary" type="button">
+                        Close
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script type="module" src="js/study-events.js"></script>
+</body>
+
+</html>

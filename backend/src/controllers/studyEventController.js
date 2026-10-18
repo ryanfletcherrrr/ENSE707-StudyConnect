@@ -6,7 +6,9 @@ import {
     findStudyEventsForStudent,
     findStudyEventParticipants,
     findStudyGroupById,
-    findStudentsInStudyGroupByIds,
+    findStudentsByIds,
+    searchStudents,
+    syncStudyEventParticipants,
     updateStudyEvent,
     cancelStudyEvent,
     isStudentInStudyGroup,
@@ -128,6 +130,22 @@ export function getMyStudyEvents(req, res) {
     return res.status(200).json({ events });
 }
 
+export function searchStudyEventStudents(req, res) {
+    const searchTerm = typeof req.query?.search === 'string'
+        ? req.query.search.trim()
+        : '';
+
+    if (searchTerm.length > 100) {
+        return res.status(400).json({
+            error: 'Search must be 100 characters or fewer.',
+        });
+    }
+
+    const students = searchStudents(db, searchTerm, req.studentId);
+
+    return res.status(200).json({ students });
+}
+
 export function getStudyEvent(req, res) {
     const eventId = parseEventId(req.params.id);
 
@@ -145,10 +163,7 @@ export function getStudyEvent(req, res) {
 
     const participants = findStudyEventParticipants(db, eventId);
 
-    return res.status(200).json({
-        event,
-        participants,
-    });
+    return res.status(200).json({ event, participants });
 }
 
 export function createStudyEventHandler(req, res) {
@@ -172,7 +187,9 @@ export function createStudyEventHandler(req, res) {
         });
     }
 
-    const uniqueInviteeIds = [...new Set(inviteeIds)];
+    const uniqueInviteeIds = [
+        ...new Set(inviteeIds.filter((id) => id !== req.studentId)),
+    ];
 
     const studyGroup = findStudyGroupById(db, studyGroupId);
 
@@ -197,15 +214,11 @@ export function createStudyEventHandler(req, res) {
         });
     }
 
-    const validInvitees = findStudentsInStudyGroupByIds(
-        db,
-        studyGroupId,
-        uniqueInviteeIds,
-    );
+    const validInvitees = findStudentsByIds(db, uniqueInviteeIds);
 
     if (validInvitees.length !== uniqueInviteeIds.length) {
         return res.status(400).json({
-            error: 'All invitees must be registered students who belong to the selected study group.',
+            error: 'All invitees must be registered students.',
         });
     }
 
@@ -260,10 +273,43 @@ export function updateStudyEventHandler(req, res) {
         });
     }
 
+    let uniqueInviteeIds;
+
+    if (req.body?.invitee_ids !== undefined) {
+        if (
+            !Array.isArray(req.body.invitee_ids) ||
+            !req.body.invitee_ids.every(
+                (id) => Number.isInteger(id) && id > 0,
+            )
+        ) {
+            return res.status(400).json({
+                error: 'invitee_ids must be an array of valid student IDs.',
+            });
+        }
+
+        uniqueInviteeIds = [
+            ...new Set(
+                req.body.invitee_ids.filter((id) => id !== req.studentId),
+            ),
+        ];
+
+        const validInvitees = findStudentsByIds(db, uniqueInviteeIds);
+
+        if (validInvitees.length !== uniqueInviteeIds.length) {
+            return res.status(400).json({
+                error: 'All invitees must be registered students.',
+            });
+        }
+    }
+
     const updatedEvent = updateStudyEvent(db, {
         eventId,
         ...values,
     });
+
+    if (uniqueInviteeIds !== undefined) {
+        syncStudyEventParticipants(db, eventId, uniqueInviteeIds);
+    }
 
     return res.status(200).json({
         message: 'Study event updated successfully.',
