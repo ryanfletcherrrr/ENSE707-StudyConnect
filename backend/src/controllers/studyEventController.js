@@ -149,9 +149,10 @@ export function getMyManagedStudyEvents(req, res) {
 }
 
 export function searchStudyEventStudents(req, res) {
-    const searchTerm = typeof req.query?.search === 'string'
-        ? req.query.search.trim()
-        : '';
+    // The custom HTTP server does not populate req.query, so read the search
+    // term from the URL directly (same approach as the study group search).
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const searchTerm = (url.searchParams.get('search') ?? '').trim();
 
     if (searchTerm.length > 100) {
         return res.status(400).json({

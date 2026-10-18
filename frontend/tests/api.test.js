@@ -286,3 +286,84 @@ test('api.getChatMembers sends an authenticated GET request for the slot', async
     clearToken();
   }
 });
+
+// Study events API helpers: each should hit the right path and method with
+// the signed-in student's token.
+const studyEventCases = [
+  {
+    name: 'searchStudyEventStudents encodes the search term',
+    call: () => api.searchStudyEventStudents('a b&c'),
+    path: '/study-events/students?search=a%20b%26c',
+    method: 'GET',
+  },
+  {
+    name: 'searchStudyEventStudents defaults to an empty search',
+    call: () => api.searchStudyEventStudents(),
+    path: '/study-events/students?search=',
+    method: 'GET',
+  },
+  {
+    name: 'getMyStudyEvents',
+    call: () => api.getMyStudyEvents(),
+    path: '/study-events',
+    method: 'GET',
+  },
+  {
+    name: 'getMyManagedStudyEvents',
+    call: () => api.getMyManagedStudyEvents(),
+    path: '/study-events/managed',
+    method: 'GET',
+  },
+  {
+    name: 'getStudyEvent',
+    call: () => api.getStudyEvent(12),
+    path: '/study-events/12',
+    method: 'GET',
+  },
+  {
+    name: 'createStudyEvent',
+    call: () => api.createStudyEvent({ title: 'Revision', study_group_id: 3 }),
+    path: '/study-events',
+    method: 'POST',
+    body: { title: 'Revision', study_group_id: 3 },
+  },
+  {
+    name: 'updateStudyEvent',
+    call: () => api.updateStudyEvent(12, { title: 'Moved' }),
+    path: '/study-events/12',
+    method: 'PATCH',
+    body: { title: 'Moved' },
+  },
+  {
+    name: 'cancelStudyEvent',
+    call: () => api.cancelStudyEvent(12),
+    path: '/study-events/12',
+    method: 'DELETE',
+  },
+];
+
+for (const { name, call, path, method, body } of studyEventCases) {
+  test(`api.${name} sends an authenticated ${method} request`, async () => {
+    setToken('event-test-token');
+
+    const stub = stubFetch((url, options) => {
+      assert.ok(url.endsWith(path), `expected ${url} to end with ${path}`);
+      assert.equal(options.method, method);
+      assert.equal(options.headers.Authorization, 'Bearer event-test-token');
+      if (body) {
+        assert.deepEqual(JSON.parse(options.body), body);
+      }
+
+      return jsonResponse(200, { ok: true });
+    });
+
+    try {
+      const result = await call();
+      assert.equal(result.ok, true);
+      assert.equal(stub.calls.length, 1);
+    } finally {
+      stub.restore();
+      clearToken();
+    }
+  });
+}
