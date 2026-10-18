@@ -68,38 +68,22 @@ export const api = {
   updateProfile: (fields) => request('/profile/me', { method: 'PUT', body: fields, auth: true }),
   createStudyGroup: (fields) => request('/study-groups', { method: 'POST', body: fields, auth: true }),
   getMyStudyGroups: () => request('/study-groups/mine', { auth: true }),
-  searchStudyGroups: (course) => request(`/study-groups?course=${encodeURIComponent(course)}`, {auth: true}),
-  getStudyGroupSlots: (studyGroupId) => request(`/study-groups/${studyGroupId}/slots`, {auth: true}),
-  joinStudyGroup: (slotId) => request('/study-groups/join', {method: 'POST', body: { slotId }, auth: true}),
-  leaveStudyGroup: (slotId) => request('/study-groups/leave', {method: 'DELETE', body: { slotId }, auth: true}),
-  
+  searchStudyGroups: (course) => request(`/study-groups?course=${encodeURIComponent(course)}`, { auth: true }),
+  getStudyGroupSlots: (studyGroupId) => request(`/study-groups/${studyGroupId}/slots`, { auth: true }),
+  joinStudyGroup: (slotId) => request('/study-groups/join', { method: 'POST', body: { slotId }, auth: true }),
+  leaveStudyGroup: (slotId) => request('/study-groups/leave', { method: 'DELETE', body: { slotId }, auth: true }),
+
   shareLearningResource: (studyGroupId, resource) =>
     request(`/study-groups/${studyGroupId}/resources`, {
       method: 'POST',
       body: resource,
       auth: true,
     }),
-  
+
   getLearningResources: (studyGroupId) =>
     request(`/study-groups/${studyGroupId}/resources`, {
       auth: true,
     }),
-
-    getNotifications: () =>
-      request('/notifications', {
-        auth: true,
-      }),
-  
-    getNotification: (notificationId) =>
-      request(`/notifications/${notificationId}`, {
-        auth: true,
-      }),
-  
-    markNotificationAsRead: (notificationId) =>
-      request(`/notifications/${notificationId}/read`, {
-        method: 'PATCH',
-        auth: true,
-      }),
 
   getChatMessages: (slotId) =>
     request(`/chat/slots/${slotId}/messages`, {
@@ -118,4 +102,54 @@ export const api = {
       auth: true,
     }),
 
+
+  searchStudyEventStudents: (search = '') =>
+    request(`/study-events/students?search=${encodeURIComponent(search)}`, {
+      auth: true,
+    }),
+
+  getMyStudyEvents: () =>
+    request('/study-events', { auth: true }),
+
+  getMyManagedStudyEvents: () =>
+    request('/study-events/managed', { auth: true }),
+
+  getStudyEvent: (eventId) =>
+    request(`/study-events/${eventId}`, { auth: true }),
+
+  createStudyEvent: (fields) =>
+    request('/study-events', {
+      method: 'POST',
+      body: fields,
+      auth: true,
+    }),
+
+  updateStudyEvent: (eventId, fields) =>
+    request(`/study-events/${eventId}`, {
+      method: 'PATCH',
+      body: fields,
+      auth: true,
+    }),
+
+  cancelStudyEvent: (eventId) =>
+    request(`/study-events/${eventId}`, {
+      method: 'DELETE',
+      auth: true,
+    }),
+
+  getNotifications: () =>
+    request('/notifications', {
+      auth: true,
+    }),
+
+  getNotification: (notificationId) =>
+    request(`/notifications/${notificationId}`, {
+      auth: true,
+    }),
+
+  markNotificationAsRead: (notificationId) =>
+    request(`/notifications/${notificationId}/read`, {
+      method: 'PATCH',
+      auth: true,
+    }),
 };

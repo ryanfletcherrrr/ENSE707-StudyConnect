@@ -1,0 +1,49 @@
+import { requireAuth } from '../middleware/auth.js';
+
+import {
+    getMyStudyEvents,
+    getMyManagedStudyEvents,
+    getStudyEvent,
+    createStudyEventHandler,
+    updateStudyEventHandler,
+    cancelStudyEventHandler,
+    searchStudyEventStudents,
+} from '../controllers/studyEventController.js';
+
+export default [
+    {
+        method: 'GET',
+        path: '/api/study-events',
+        handlers: [requireAuth, getMyStudyEvents],
+    },
+    {
+        method: 'GET',
+        path: '/api/study-events/students',
+        handlers: [requireAuth, searchStudyEventStudents],
+    },
+    {
+        method: 'GET',
+        path: '/api/study-events/managed',
+        handlers: [requireAuth, getMyManagedStudyEvents],
+    },
+    {
+        method: 'GET',
+        path: '/api/study-events/{id}',
+        handlers: [requireAuth, getStudyEvent],
+    },
+    {
+        method: 'POST',
+        path: '/api/study-events',
+        handlers: [requireAuth, createStudyEventHandler],
+    },
+    {
+        method: 'PATCH',
+        path: '/api/study-events/{id}',
+        handlers: [requireAuth, updateStudyEventHandler],
+    },
+    {
+        method: 'DELETE',
+        path: '/api/study-events/{id}',
+        handlers: [requireAuth, cancelStudyEventHandler],
+    },
+];
